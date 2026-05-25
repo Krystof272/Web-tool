@@ -136,7 +136,7 @@ function App() {
       setCollapsedVideos(savedCollapsedVideos || []);
       setCollapsedInvoices(savedCollapsedInvoices || []);
       setCollapsedPublished(savedCollapsedPublished || []);
-      if (apps && apps.length === 3) setIsConfigured(true);
+      if (apps && apps.length > 0) setIsConfigured(true);
     }
   }, []);
 
