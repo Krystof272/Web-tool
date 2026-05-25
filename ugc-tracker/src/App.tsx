@@ -580,8 +580,82 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <div className="app-title">
-          <h1>UGC Tracker</h1>
+        <div className="header-row top-row">
+          <div className="app-title">
+            <h1>UGC Tracker</h1>
+          </div>
+          <div className="header-actions">
+            <div className="filters">
+              <div className="filter-input-wrapper">
+                <Globe size={14} className="filter-icon" />
+                <input
+                  type="text"
+                  placeholder="Filtr jazyk..."
+                  value={langFilter}
+                  onChange={(e) => setLangFilter(e.target.value)}
+                  className="filter-input"
+                />
+              </div>
+              <div className="filter-input-wrapper">
+                <Plus
+                  size={14}
+                  className="filter-icon"
+                  style={{ transform: "rotate(45deg)" }}
+                />
+                <input
+                  type="text"
+                  placeholder="Filtr tagy..."
+                  value={tagFilter}
+                  onChange={(e) => setTagFilter(e.target.value)}
+                  className="filter-input"
+                />
+              </div>
+            </div>
+            <div className="data-actions">
+              <button
+                className="icon-btn"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                title={`Přepnout na ${theme === "dark" ? "světlý" : "tmavý"} režim`}
+              >
+                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+              <button
+                className="icon-btn"
+                onClick={exportData}
+                title="Exportovat data (Záloha)"
+              >
+                <Download size={18} />
+              </button>
+              <label className="icon-btn" title="Importovat data">
+                <Upload size={18} />
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={importData}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </div>
+            <div className="manage-buttons">
+              <button
+                className="add-btn secondary"
+                onClick={() => setShowAppManager(true)}
+              >
+                Aplikace
+              </button>
+              <button
+                className="add-btn secondary"
+                onClick={() => setShowCreatorManager(true)}
+              >
+                Tvůrce
+              </button>
+              <button className="add-btn" onClick={handleOpenAddForm}>
+                <Plus size={20} /> Nové Video
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="header-row tabs-row">
           <div className="app-tabs">
             {apps.map((app) => (
               <button
@@ -593,74 +667,6 @@ function App() {
               </button>
             ))}
           </div>
-        </div>
-        <div className="header-actions">
-          <div className="filters">
-            <div className="filter-input-wrapper">
-              <Globe size={14} className="filter-icon" />
-              <input
-                type="text"
-                placeholder="Filtr jazyk..."
-                value={langFilter}
-                onChange={(e) => setLangFilter(e.target.value)}
-                className="filter-input"
-              />
-            </div>
-            <div className="filter-input-wrapper">
-              <Plus
-                size={14}
-                className="filter-icon"
-                style={{ transform: "rotate(45deg)" }}
-              />
-              <input
-                type="text"
-                placeholder="Filtr tagy..."
-                value={tagFilter}
-                onChange={(e) => setTagFilter(e.target.value)}
-                className="filter-input"
-              />
-            </div>
-          </div>
-          <div className="data-actions">
-            <button
-              className="icon-btn"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              title={`Přepnout na ${theme === "dark" ? "světlý" : "tmavý"} režim`}
-            >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <button
-              className="icon-btn"
-              onClick={exportData}
-              title="Exportovat data (Záloha)"
-            >
-              <Download size={18} />
-            </button>
-            <label className="icon-btn" title="Importovat data">
-              <Upload size={18} />
-              <input
-                type="file"
-                accept=".json"
-                onChange={importData}
-                style={{ display: "none" }}
-              />
-            </label>
-          </div>
-          <button
-            className="add-btn secondary"
-            onClick={() => setShowAppManager(true)}
-          >
-            Spravovat Aplikace
-          </button>
-          <button
-            className="add-btn secondary"
-            onClick={() => setShowCreatorManager(true)}
-          >
-            Spravovat Tvůrce
-          </button>
-          <button className="add-btn" onClick={handleOpenAddForm}>
-            <Plus size={20} /> Nové Video
-          </button>
         </div>
       </header>
 

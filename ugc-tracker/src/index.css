@@ -149,15 +149,59 @@ header {
   z-index: 1100;
   background-color: var(--bg-header);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   margin-bottom: 1.2rem;
   border-bottom: 1px solid var(--border-color);
-  padding: 0.8rem 1.5rem;
+  padding: 0;
   margin-left: -2rem;
   margin-right: -2rem;
   margin-top: -2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.top-row {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  gap: 2rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.tabs-row {
+  padding: 0;
+  border-top: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .tabs-row {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.app-tabs {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem 1.5rem;
+}
+
+.manage-buttons {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
 }
 
 .add-btn {
@@ -172,28 +216,18 @@ header {
   gap: 0.5rem;
   font-weight: 600;
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .add-btn:hover {
   background-color: var(--accent-hover);
 }
 
-.app-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-right: 2rem;
-}
-
 .app-title h1 {
   font-size: 1.6rem;
   margin: 0;
   color: var(--accent-color);
-}
-
-.app-tabs {
-  display: flex;
-  gap: 0.3rem;
+  white-space: nowrap;
 }
 
 .tab {
@@ -881,6 +915,21 @@ tr:hover {
   flex-direction: column;
   gap: 1rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content.modal-wide {
+  max-width: 800px;
+}
+
+.apps-manage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.8rem;
+  max-height: 450px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding-right: 0.5rem;
+  scrollbar-width: thin;
 }
 
 .modal-content input, 
