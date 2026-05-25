@@ -21,6 +21,14 @@ const THEME_KEY = "ugc_tracker_theme";
 
 const INITIAL_CREATORS = ["krystof"];
 
+const getChipColorClass = (text: string) => {
+  const t = text.toLowerCase().trim();
+  if (t === "recenze" || t === "cz" || t === "cs") return "color-green";
+  if (t === "reels" || t.includes("titulky")) return "color-purple";
+  if (t === "feed" || t.includes("pub") || t === "en") return "color-blue";
+  return "color-default";
+};
+
 function App() {
   const [apps, setApps] = useState<string[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -34,6 +42,7 @@ function App() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isConfigured, setIsConfigured] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [editingField, setEditingField] = useState<{ id: string; field: "tags" | "language" } | null>(null);
 
   // Apply theme class
   useEffect(() => {
@@ -1092,12 +1101,17 @@ function App() {
                                       })}
                                     </div>
                                   </td>
-                                  <td className="col-lang">
-                                    <div className="field-with-icon">
-                                      <Globe size={12} className="field-icon" />
+                                  <td
+                                    className="col-lang"
+                                    onClick={() => setEditingField({ id: video.id, field: "language" })}
+                                  >
+                                    {editingField?.id === video.id && editingField?.field === "language" ? (
                                       <input
+                                        autoFocus
                                         className="table-editable-field"
                                         value={video.language}
+                                        onBlur={() => setEditingField(null)}
+                                        onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
                                         onChange={(e) =>
                                           updateVideoField(
                                             video.id,
@@ -1106,21 +1120,44 @@ function App() {
                                           )
                                         }
                                       />
-                                    </div>
+                                    ) : (
+                                      <div className="chips-container">
+                                        <Globe size={12} className="url-icon" />
+                                        {(video.language || "").split(",").map((l, i) => l.trim() && (
+                                          <span key={i} className={`chip lang-chip ${getChipColorClass(l.trim())}`}>{l.trim()}</span>
+                                        ))}
+                                        {!(video.language || "").trim() && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>+</span>}
+                                      </div>
+                                    )}
                                   </td>
-                                  <td className="col-tags">
-                                    <input
-                                      className="table-editable-field"
-                                      placeholder="Tagy..."
-                                      value={video.tags}
-                                      onChange={(e) =>
-                                        updateVideoField(
-                                          video.id,
-                                          "tags",
-                                          e.target.value,
-                                        )
-                                      }
-                                    />
+                                  <td
+                                    className="col-tags"
+                                    onClick={() => setEditingField({ id: video.id, field: "tags" })}
+                                  >
+                                    {editingField?.id === video.id && editingField?.field === "tags" ? (
+                                      <input
+                                        autoFocus
+                                        className="table-editable-field"
+                                        placeholder="Tagy..."
+                                        value={video.tags}
+                                        onBlur={() => setEditingField(null)}
+                                        onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
+                                        onChange={(e) =>
+                                          updateVideoField(
+                                            video.id,
+                                            "tags",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    ) : (
+                                      <div className="chips-container">
+                                        {(video.tags || "").split(",").map((t, i) => t.trim() && (
+                                          <span key={i} className={`chip tag-chip ${getChipColorClass(t.trim())}`}>{t.trim()}</span>
+                                        ))}
+                                        {!(video.tags || "").trim() && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>+</span>}
+                                      </div>
+                                    )}
                                   </td>
                                   <td className="col-notes">
                                     <div className="table-notes-container">
@@ -1274,12 +1311,17 @@ function App() {
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="col-lang">
-                                    <div className="field-with-icon">
-                                      <Globe size={12} className="field-icon" />
+                                  <td
+                                    className="col-lang"
+                                    onClick={() => setEditingField({ id: video.id, field: "language" })}
+                                  >
+                                    {editingField?.id === video.id && editingField?.field === "language" ? (
                                       <input
+                                        autoFocus
                                         className="table-editable-field"
                                         value={video.language}
+                                        onBlur={() => setEditingField(null)}
+                                        onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
                                         onChange={(e) =>
                                           updateVideoField(
                                             video.id,
@@ -1288,21 +1330,44 @@ function App() {
                                           )
                                         }
                                       />
-                                    </div>
+                                    ) : (
+                                      <div className="chips-container">
+                                        <Globe size={12} className="url-icon" />
+                                        {(video.language || "").split(",").map((l, i) => l.trim() && (
+                                          <span key={i} className={`chip lang-chip ${getChipColorClass(l.trim())}`}>{l.trim()}</span>
+                                        ))}
+                                        {!(video.language || "").trim() && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>+</span>}
+                                      </div>
+                                    )}
                                   </td>
-                                  <td className="col-tags">
-                                    <input
-                                      className="table-editable-field"
-                                      placeholder="Tagy..."
-                                      value={video.tags}
-                                      onChange={(e) =>
-                                        updateVideoField(
-                                          video.id,
-                                          "tags",
-                                          e.target.value,
-                                        )
-                                      }
-                                    />
+                                  <td
+                                    className="col-tags"
+                                    onClick={() => setEditingField({ id: video.id, field: "tags" })}
+                                  >
+                                    {editingField?.id === video.id && editingField?.field === "tags" ? (
+                                      <input
+                                        autoFocus
+                                        className="table-editable-field"
+                                        placeholder="Tagy..."
+                                        value={video.tags}
+                                        onBlur={() => setEditingField(null)}
+                                        onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
+                                        onChange={(e) =>
+                                          updateVideoField(
+                                            video.id,
+                                            "tags",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    ) : (
+                                      <div className="chips-container">
+                                        {(video.tags || "").split(",").map((t, i) => t.trim() && (
+                                          <span key={i} className={`chip tag-chip ${getChipColorClass(t.trim())}`}>{t.trim()}</span>
+                                        ))}
+                                        {!(video.tags || "").trim() && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>+</span>}
+                                      </div>
+                                    )}
                                   </td>
                                   <td className="col-notes">
                                     <div className="table-notes-container">
