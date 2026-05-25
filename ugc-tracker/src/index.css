@@ -251,7 +251,7 @@ header {
   padding: 0.4rem 0.8rem 0.4rem 2.2rem;
   border-radius: 8px;
   font-size: 0.85rem;
-  width: 150px;
+  width: 70px;
   transition: all 0.2s;
 }
 
@@ -259,7 +259,7 @@ header {
   border-color: var(--accent-color);
   outline: none;
   background: var(--bg-app);
-  width: 180px;
+  width: 80px;
 }
 
 .data-actions {
