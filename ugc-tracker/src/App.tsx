@@ -41,6 +41,7 @@ function App() {
   // Add Video Form State
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCreatorManager, setShowCreatorManager] = useState(false);
+  const [showAppManager, setShowAppManager] = useState(false);
   const [newVideo, setNewVideo] = useState({
     title: "",
     creator: INITIAL_CREATORS[0],
@@ -150,10 +151,51 @@ function App() {
   };
 
   const handleSetup = () => {
-    if (tempApps.every((a) => a.trim() !== "")) {
-      setApps(tempApps);
-      setCurrentApp(tempApps[0]);
+    const validApps = tempApps.filter((a) => a.trim() !== "");
+    if (validApps.length > 0) {
+      setApps(validApps);
+      setCurrentApp(validApps[0]);
       setIsConfigured(true);
+    }
+  };
+
+  const addApp = (name: string) => {
+    if (name && !apps.includes(name)) {
+      setApps([...apps, name]);
+    }
+  };
+
+  const updateAppName = (oldName: string, newName: string) => {
+    if (!newName || oldName === newName || apps.includes(newName)) return;
+
+    setApps(apps.map((a) => (a === oldName ? newName : a)));
+    if (currentApp === oldName) setCurrentApp(newName);
+
+    // Migrate videos and invoices
+    setVideos(
+      videos.map((v) => (v.app === oldName ? { ...v, app: newName } : v)),
+    );
+    setInvoices(
+      invoices.map((inv) =>
+        inv.app === oldName ? { ...inv, app: newName } : inv,
+      ),
+    );
+  };
+
+  const deleteApp = (name: string) => {
+    if (apps.length <= 1) {
+      alert("Musíte mít alespoň jednu aplikaci.");
+      return;
+    }
+    const appVideos = videos.filter((v) => v.app === name);
+    if (appVideos.length > 0) {
+      alert("Nelze smazat aplikaci, která má přiřazená videa.");
+      return;
+    }
+    if (window.confirm(`Smazat aplikaci "${name}"?`)) {
+      const newApps = apps.filter((a) => a !== name);
+      setApps(newApps);
+      if (currentApp === name) setCurrentApp(newApps[0]);
     }
   };
 
@@ -550,6 +592,12 @@ function App() {
           </div>
           <button
             className="add-btn secondary"
+            onClick={() => setShowAppManager(true)}
+          >
+            Spravovat Aplikace
+          </button>
+          <button
+            className="add-btn secondary"
             onClick={() => setShowCreatorManager(true)}
           >
             Spravovat Tvůrce
@@ -594,6 +642,48 @@ function App() {
               <button
                 className="cancel"
                 onClick={() => setShowCreatorManager(false)}
+              >
+                Zavřít
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAppManager && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Správa Aplikací</h2>
+            <div className="creator-list">
+              {apps.map((app, index) => (
+                <div key={index} className="creator-manage-item">
+                  <input
+                    className="creator-manage-input"
+                    value={app}
+                    onChange={(e) => updateAppName(app, e.target.value)}
+                  />
+                  <button
+                    onClick={() => deleteApp(app)}
+                    className="delete-btn"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              className="add-btn"
+              onClick={() => {
+                const name = window.prompt("Název nové aplikace:");
+                if (name) addApp(name);
+              }}
+            >
+              <Plus size={18} /> Přidat Aplikaci
+            </button>
+            <div className="modal-actions">
+              <button
+                className="cancel"
+                onClick={() => setShowAppManager(false)}
               >
                 Zavřít
               </button>
@@ -718,8 +808,6 @@ function App() {
           const allCreatorVideos = videos.filter(
             (v) => v.creator === creator && v.app === currentApp,
           );
-
-          if (allCreatorVideos.length === 0) return null;
 
           // Filter videos by tag/lang filters for display
           const filteredVideos = allCreatorVideos.filter((v) => {
@@ -867,7 +955,7 @@ function App() {
                                       className="separator"
                                     />
                                     <span className="stage-published">
-                                      Publiko
+                                      Publikováno
                                     </span>
                                   </div>
                                 </th>

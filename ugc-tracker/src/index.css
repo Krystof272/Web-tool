@@ -134,6 +134,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  margin-right: 2rem;
 }
 
 .app-title h1 {
