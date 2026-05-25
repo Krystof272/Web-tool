@@ -1,0 +1,28 @@
+export type ProductionStatus = 'ready' | 'dubbing' | 'subtitles' | 'published';
+
+export interface Video {
+  id: string;
+  title: string;
+  creator: string;
+  app: string;
+  language: string;
+  videoUrl?: string;
+  tags: string;
+  notes: string;
+  status: ProductionStatus;
+  createdAt: number;
+}
+
+export interface Invoice {
+  id: string;
+  creator: string;
+  app: string;
+  date: string;
+  isReceived: boolean;
+  isPaid: boolean;
+}
+
+export interface AppConfig {
+  selectedApps: string[];
+  creators: string[];
+}
