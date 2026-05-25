@@ -23,18 +23,23 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 ## Instalace a Spuštění
 
 ### Požadavky
+
 - Node.js (verze 18+)
 - npm
 
 ### První spuštění
+
 V kořenovém adresáři projektu (`ugc-tracker`) spusťte:
+
 ```powershell
 npm install
 npm run dev
 ```
 
 ### Rychlé spuštění
+
 V kořenovém adresáři se nachází pomocné skripty. Stačí na ně dvakrát kliknout pro automatické spuštění serveru a otevření aplikace:
+
 - **Windows:** `Spustit_Tracker.bat`
 - **macOS:** `Spustit_Mac.command` (před prvním použitím vyžaduje `chmod +x`)
 
@@ -53,4 +58,4 @@ V kořenovém adresáři se nachází pomocné skripty. Stačí na ně dvakrát 
 
 ## Stav Projektu
 
-- **Květen 2026 (Aktualizace):** Odebrán Light Mode (aplikace je nyní pouze v Dark Mode), neomezená správa aplikací, hromadné akce s videi (multi-select), optimalizováno UI (kompaktní sticky záhlaví, velké pole poznámek, inline editace URL) a vytvořen spouštěč pro macOS. Projekt úspěšně prochází build procesem (`npm run build`).
+- **Květen 2026 (Aktualizace):** Přidán Light Mode (přepínatelný v záhlaví), neomezená správa aplikací, hromadné akce s videi (multi-select), optimalizováno UI (kompaktní sticky záhlaví, velké pole poznámek, inline editace URL) a vytvořen spouštěč pro macOS. Projekt úspěšně prochází build procesem (`npm run build`).

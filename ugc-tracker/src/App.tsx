@@ -13,8 +13,11 @@ import {
   Calendar,
   Check,
   Copy,
+  Sun,
+  Moon,
 } from "lucide-react";
 const STORAGE_KEY = "ugc_tracker_data";
+const THEME_KEY = "ugc_tracker_theme";
 
 const INITIAL_CREATORS = ["krystof"];
 
@@ -30,6 +33,17 @@ function App() {
   const [collapsedPublished, setCollapsedPublished] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isConfigured, setIsConfigured] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  // Apply theme class
+  useEffect(() => {
+    if (theme === "light") {
+      document.body.classList.add("light-mode");
+    } else {
+      document.body.classList.remove("light-mode");
+    }
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
   // Filter State
   const [tagFilter, setTagFilter] = useState("");
@@ -54,6 +68,9 @@ function App() {
 
   // Load data
   useEffect(() => {
+    const savedTheme = localStorage.getItem(THEME_KEY) as "light" | "dark";
+    if (savedTheme) setTheme(savedTheme);
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const {
@@ -579,6 +596,13 @@ function App() {
             </div>
           </div>
           <div className="data-actions">
+            <button
+              className="icon-btn"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title={`Přepnout na ${theme === "dark" ? "světlý" : "tmavý"} režim`}
+            >
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <button
               className="icon-btn"
               onClick={exportData}

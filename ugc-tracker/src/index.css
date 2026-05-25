@@ -3,9 +3,33 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark light;
+  
+  --bg-app: #242424;
+  --bg-header: #242424;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-header: #2a2a2a;
+  --bg-input: #1a1a1a;
+  --bg-modal: #333;
+  --bg-item: #222;
+  --bg-bulk: #1e1e1e;
+  
+  --text-main: rgba(255, 255, 255, 0.87);
+  --text-muted: #aaa;
+  --text-inverse: #213547;
+  
+  --border-color: #333;
+  --border-input: #444;
+  
+  --accent-color: #646cff;
+  --accent-hover: #535bf2;
+  
+  --table-header: rgba(0, 0, 0, 0.2);
+  --table-hover: rgba(255, 255, 255, 0.03);
+  --table-border: #333;
+
+  color: var(--text-main);
+  background-color: var(--bg-app);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,20 +37,44 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.light-mode {
+  --bg-app: #f9f9f9;
+  --bg-header: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-header: #f1f1f1;
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  --bg-item: #f5f5f5;
+  --bg-bulk: #ffffff;
+  
+  --text-main: #213547;
+  --text-muted: #666;
+  
+  --border-color: #e2e2e2;
+  --border-input: #ccc;
+  
+  --table-header: #f8f8f8;
+  --table-hover: #fcfcfc;
+  --table-border: #eee;
+  
+  color: var(--text-main);
+  background-color: var(--bg-app);
+}
+
 /* Bulk Actions */
 .bulk-actions-bar {
   position: sticky;
   top: 70px;
   z-index: 1050;
-  background: #1e1e1e;
-  border: 1px solid #333;
+  background: var(--bg-bulk);
+  border: 1px solid var(--border-color);
   padding: 0.8rem 1.5rem;
   margin-bottom: 1.5rem;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: slideIn 0.3s ease-out;
 }
 
@@ -37,7 +85,7 @@
 
 .selection-count {
   font-weight: 600;
-  color: #646cff;
+  color: var(--accent-color);
 }
 
 .bulk-buttons {
@@ -55,12 +103,12 @@
   transition: all 0.2s;
 }
 
-.bulk-btn.ready { background: #333; color: #fff; }
+.bulk-btn.ready { background: var(--bg-item); color: var(--text-main); border-color: var(--border-color); }
 .bulk-btn.dubbing { background: #eab308; color: #000; }
 .bulk-btn.subtitles { background: #3b82f6; color: #fff; }
 .bulk-btn.published { background: #10b981; color: #fff; }
 .bulk-btn.delete-all { background: #ef4444; color: #fff; margin-left: auto; }
-.bulk-btn.cancel { background: transparent; border-color: #444; color: #888; }
+.bulk-btn.cancel { background: transparent; border-color: var(--border-input); color: var(--text-muted); }
 
 .bulk-btn:hover {
   transform: translateY(-1px);
@@ -99,21 +147,21 @@ header {
   position: sticky;
   top: 0;
   z-index: 1100;
-  background-color: #242424;
+  background-color: var(--bg-header);
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.2rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-color);
   padding: 0.8rem 1.5rem;
   margin-left: -2rem;
   margin-right: -2rem;
   margin-top: -2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .add-btn {
-  background-color: #646cff;
+  background-color: var(--accent-color);
   color: white;
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
@@ -127,7 +175,7 @@ header {
 }
 
 .add-btn:hover {
-  background-color: #535bf2;
+  background-color: var(--accent-hover);
 }
 
 .app-title {
@@ -140,7 +188,7 @@ header {
 .app-title h1 {
   font-size: 1.6rem;
   margin: 0;
-  color: #646cff;
+  color: var(--accent-color);
 }
 
 .app-tabs {
@@ -150,8 +198,8 @@ header {
 
 .tab {
   background: transparent;
-  border: 1px solid #444;
-  color: #aaa;
+  border: 1px solid var(--border-input);
+  color: var(--text-muted);
   padding: 0.3rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
@@ -160,13 +208,13 @@ header {
 }
 
 .tab.active {
-  background: #646cff;
+  background: var(--accent-color);
   color: white;
-  border-color: #646cff;
+  border-color: var(--accent-color);
 }
 
 .tab:hover:not(.active) {
-  background: #444;
+  background: var(--bg-card-header);
 }
 
 .header-actions {
@@ -180,7 +228,7 @@ header {
   gap: 0.8rem;
   margin-right: 0.5rem;
   padding-right: 1rem;
-  border-right: 1px solid #444;
+  border-right: 1px solid var(--border-input);
 }
 
 .filter-input-wrapper {
@@ -192,14 +240,14 @@ header {
 .filter-icon {
   position: absolute;
   left: 10px;
-  color: #666;
+  color: var(--text-muted);
   pointer-events: none;
 }
 
 .filter-input {
-  background: #1a1a1a;
-  border: 1px solid #444;
-  color: white;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  color: var(--text-main);
   padding: 0.4rem 0.8rem 0.4rem 2.2rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -208,9 +256,9 @@ header {
 }
 
 .filter-input:focus {
-  border-color: #646cff;
+  border-color: var(--accent-color);
   outline: none;
-  background: #222;
+  background: var(--bg-app);
   width: 180px;
 }
 
@@ -219,13 +267,13 @@ header {
   gap: 0.5rem;
   margin-right: 0.5rem;
   padding-right: 1rem;
-  border-right: 1px solid #444;
+  border-right: 1px solid var(--border-input);
 }
 
 .icon-btn {
   background: transparent;
-  border: 1px solid #444;
-  color: #aaa;
+  border: 1px solid var(--border-input);
+  color: var(--text-muted);
   padding: 0.5rem;
   border-radius: 8px;
   cursor: pointer;
@@ -235,24 +283,26 @@ header {
 }
 
 .icon-btn:hover {
-  background: #333;
-  color: white;
-  border-color: #646cff;
+  background: var(--bg-card-header);
+  color: var(--text-main);
+  border-color: var(--accent-color);
 }
 
 .add-btn.secondary {
-  background-color: #444;
+  background-color: var(--bg-card-header);
+  color: var(--text-main);
+  border: 1px solid var(--border-input);
 }
 
 .add-btn.secondary:hover {
-  background-color: #555;
+  background-color: var(--bg-item);
 }
 
 .setup-container {
   max-width: 400px;
   margin: 100px auto;
   padding: 2rem;
-  background: #333;
+  background: var(--bg-card-header);
   border-radius: 12px;
   text-align: center;
 }
@@ -263,15 +313,15 @@ header {
   margin-bottom: 1rem;
   padding: 0.8rem;
   border-radius: 6px;
-  border: 1px solid #555;
-  background: #222;
-  color: white;
+  border: 1px solid var(--border-input);
+  background: var(--bg-input);
+  color: var(--text-main);
 }
 
 .setup-container button {
   width: 100%;
   padding: 1rem;
-  background: #646cff;
+  background: var(--accent-color);
   border: none;
   border-radius: 6px;
   color: white;
@@ -293,17 +343,17 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #222;
+  background: var(--bg-item);
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
-  border: 1px solid #444;
+  border: 1px solid var(--border-input);
   gap: 0.5rem;
 }
 
 .creator-manage-input {
   background: transparent;
   border: 1px solid transparent;
-  color: white;
+  color: var(--text-main);
   font-weight: 500;
   font-family: inherit;
   font-size: 1rem;
@@ -315,17 +365,17 @@ header {
 
 .creator-manage-input:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: #444;
+  border-color: var(--border-input);
 }
 
 .creator-manage-input:focus {
-  background: #111;
-  border-color: #646cff;
+  background: var(--bg-input);
+  border-color: var(--accent-color);
   outline: none;
 }
 
 .notes-container {
-  border-top: 1px solid #444;
+  border-top: 1px solid var(--border-input);
   padding-top: 0.8rem;
   display: flex;
   gap: 0.5rem;
@@ -334,14 +384,14 @@ header {
 
 .notes-icon {
   margin-top: 6px;
-  color: #888;
+  color: var(--text-muted);
 }
 
 .editable-notes {
   width: 100%;
   background: transparent;
   border: none;
-  color: #ccc;
+  color: var(--text-muted);
   font-family: inherit;
   font-size: 0.85rem;
   resize: vertical;
@@ -354,7 +404,7 @@ header {
 .editable-notes:focus {
   background: rgba(255, 255, 255, 0.05);
   outline: none;
-  color: white;
+  color: var(--text-main);
 }
 
 .editable-notes:hover {
@@ -363,10 +413,10 @@ header {
 
 .creator-section {
   margin-bottom: 2rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-card);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #333;
+  border: 1px solid var(--border-color);
 }
 
 .creator-header {
@@ -374,21 +424,21 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: #2a2a2a;
+  background: var(--bg-card-header);
   cursor: pointer;
   transition: background 0.2s;
   user-select: none;
 }
 
 .creator-header:hover {
-  background: #333;
+  background: var(--bg-item);
 }
 
 .creator-title {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  color: #646cff;
+  color: var(--accent-color);
   flex: 1;
 }
 
@@ -412,8 +462,8 @@ header {
 }
 
 .creator-name-input:focus {
-  background: #1a1a1a;
-  border-color: #646cff;
+  background: var(--bg-input);
+  border-color: var(--accent-color);
   outline: none;
   width: 100%;
   max-width: 400px;
@@ -422,7 +472,7 @@ header {
 .creator-summary {
   display: flex;
   gap: 1.5rem;
-  color: #aaa;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -435,11 +485,11 @@ header {
 .video-table-container {
   width: 100%;
   overflow-x: auto;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.01);
 }
 
 .section-group {
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .section-header {
@@ -461,7 +511,7 @@ header {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #fff;
+  color: var(--text-main);
   font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -480,22 +530,22 @@ table {
 }
 
 th {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--table-header);
   padding: 0.8rem 1rem;
   font-weight: 600;
-  color: #aaa;
-  border-bottom: 1px solid #444;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-input);
   white-space: nowrap;
 }
 
 td {
   padding: 0.6rem 1rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--table-border);
   vertical-align: middle;
 }
 
 tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--table-hover);
 }
 
 .col-lang { width: 100px; }
@@ -506,7 +556,7 @@ tr:hover {
 
 .col-title .table-editable-field {
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   font-size: 0.95rem;
 }
 
@@ -527,10 +577,9 @@ tr:hover {
 }
 
 .header-workflow .separator {
-  color: #888;
+  color: var(--text-muted);
   margin: 0;
   flex-shrink: 0;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1));
 }
 
 /* Status Colors */
@@ -579,31 +628,31 @@ tr:hover {
 .title-field {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .url-edit-wrapper {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.1);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
 }
 
 .url-icon {
-  color: #666;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .url-field {
   font-size: 0.75rem !important;
-  color: #888 !important;
+  color: var(--text-muted) !important;
   font-style: italic;
 }
 
 .url-field:focus {
-  color: #646cff !important;
+  color: var(--accent-color) !important;
 }
 
 .link-actions {
@@ -620,7 +669,7 @@ tr:hover {
   width: 24px;
   height: 24px;
   border-radius: 4px;
-  color: #646cff;
+  color: var(--accent-color);
   transition: all 0.2s;
   background: transparent;
   border: none;
@@ -644,20 +693,20 @@ tr:hover {
 }
 
 .table-tag {
-  background: #444;
+  background: var(--bg-item);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 0.75rem;
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 600;
-  border: 1px solid #555;
+  border: 1px solid var(--border-input);
 }
 
 .table-editable-field {
   width: 100%;
   background: transparent;
   border: 1px solid transparent;
-  color: #ccc;
+  color: var(--text-muted);
   font-family: inherit;
   font-size: 0.85rem;
   padding: 4px 8px;
@@ -667,13 +716,13 @@ tr:hover {
 
 .table-editable-field:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: #444;
+  border-color: var(--border-input);
 }
 
 .table-editable-field:focus {
-  background: #1a1a1a;
-  border-color: #646cff;
-  color: white;
+  background: var(--bg-input);
+  border-color: var(--accent-color);
+  color: var(--text-main);
   outline: none;
 }
 
@@ -684,7 +733,7 @@ tr:hover {
 }
 
 .field-icon {
-  color: #666;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -700,7 +749,7 @@ tr:hover {
   width: 100%;
   background: transparent;
   border: 1px solid transparent;
-  color: #ccc;
+  color: var(--text-muted);
   font-family: inherit;
   font-size: 0.82rem;
   padding: 6px 8px;
@@ -714,13 +763,13 @@ tr:hover {
 }
 
 .table-editable-notes:focus {
-  background: #1a1a1a;
-  border-color: #646cff;
+  background: var(--bg-input);
+  border-color: var(--accent-color);
   height: 250px;
   width: 450px;
   position: absolute;
   z-index: 1000;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
   margin-left: -350px; /* Expand to the left to stay on screen */
   padding: 12px;
   white-space: normal;
@@ -753,15 +802,15 @@ tr:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal-content {
-  background: #333;
+  background: var(--bg-modal);
   padding: 2rem;
   border-radius: 12px;
   width: 100%;
@@ -769,6 +818,7 @@ tr:hover {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .modal-content input, 
@@ -776,9 +826,9 @@ tr:hover {
 .modal-content textarea {
   padding: 0.8rem;
   border-radius: 6px;
-  border: 1px solid #555;
-  background: #222;
-  color: white;
+  border: 1px solid var(--border-input);
+  background: var(--bg-input);
+  color: var(--text-main);
 }
 
 .modal-actions {
@@ -791,26 +841,28 @@ tr:hover {
   padding: 0.8rem;
   border-radius: 6px;
   border: none;
-  background: #646cff;
+  background: var(--accent-color);
   color: white;
   font-weight: bold;
   cursor: pointer;
 }
 
 .modal-actions button.cancel {
-  background: #555;
+  background: var(--bg-item);
+  color: var(--text-main);
+  border: 1px solid var(--border-input);
 }
 
 .empty-state {
   text-align: center;
   padding: 4rem;
-  color: #888;
+  color: var(--text-muted);
 }
 
 /* Invoices Section Styling */
 .invoices-section {
-  border-top: 1px solid #333;
-  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .invoices-header {
@@ -818,20 +870,20 @@ tr:hover {
   justify-content: space-between;
   align-items: center;
   padding: 0.6rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.01);
   cursor: pointer;
   user-select: none;
 }
 
 .invoices-header:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .invoices-title {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #fff;
+  color: var(--text-main);
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -839,9 +891,9 @@ tr:hover {
 }
 
 .add-invoice-btn {
-  background: rgba(100, 108, 255, 0.15);
-  border: 1.5px solid #646cff;
-  color: #fff;
+  background: rgba(100, 108, 255, 0.1);
+  border: 1.5px solid var(--accent-color);
+  color: var(--text-main);
   padding: 0.4rem 0.9rem;
   border-radius: 6px;
   font-size: 0.8rem;
@@ -851,18 +903,12 @@ tr:hover {
   align-items: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .add-invoice-btn:hover {
-  background: #646cff;
+  background: var(--accent-color);
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
-}
-
-.add-invoice-btn svg {
-  stroke-width: 2.5px;
 }
 
 .invoices-content {
@@ -870,7 +916,7 @@ tr:hover {
 }
 
 .no-invoices {
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.85rem;
   font-style: italic;
   margin: 0;
@@ -888,7 +934,7 @@ tr:hover {
 }
 
 .published-section {
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border-color);
 }
 
 .invoices-table {
@@ -899,12 +945,12 @@ tr:hover {
 .invoices-table th {
   padding: 0.4rem 0.8rem;
   font-size: 0.75rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .invoices-table td {
   padding: 0.5rem 0.8rem;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--table-border);
 }
 
 .invoice-date-cell {
@@ -922,9 +968,9 @@ tr:hover {
 
 .invoice-date-display {
   font-size: 0.85rem;
-  color: #ccc;
+  color: var(--text-main);
   padding: 2px 4px;
-  pointer-events: none; /* Make text ignore clicks so they pass to input */
+  pointer-events: none;
   z-index: 1;
 }
 
@@ -936,7 +982,7 @@ tr:hover {
   height: 100%;
   opacity: 0;
   cursor: pointer;
-  z-index: 2; /* Put input on top */
+  z-index: 2;
   pointer-events: auto;
 }
 
@@ -959,9 +1005,9 @@ tr:hover {
 }
 
 .status-chip.empty {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed #444;
-  color: #666;
+  background: var(--bg-item);
+  border: 1px dashed var(--border-input);
+  color: var(--text-muted);
 }
 
 .invoice-status-group {
@@ -970,9 +1016,9 @@ tr:hover {
 }
 
 .status-chip {
-  background: #2a2a2a;
-  border: 1px solid #333;
-  color: #777;
+  background: var(--bg-item);
+  border: 1px solid var(--border-input);
+  color: var(--text-muted);
   padding: 0.2rem 0.6rem;
   border-radius: 20px;
   font-size: 0.75rem;
