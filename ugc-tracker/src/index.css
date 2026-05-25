@@ -735,6 +735,7 @@ tr:hover {
   background: rgba(0, 0, 0, 0.1);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
+  width: fit-content;
 }
 
 .url-icon {
@@ -746,10 +747,16 @@ tr:hover {
   font-size: 0.75rem !important;
   color: var(--text-muted) !important;
   font-style: italic;
+  width: 40px !important;
+  padding: 4px 4px !important;
+  flex-shrink: 0;
+  transition: width 0.2s ease-in-out !important;
 }
 
 .url-field:focus {
   color: var(--accent-color) !important;
+  width: 220px !important;
+  outline: none;
 }
 
 .link-actions {
