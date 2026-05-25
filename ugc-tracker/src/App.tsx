@@ -242,14 +242,20 @@ function App() {
   };
 
   const toggleStatus = (id: string, currentStatus: ProductionStatus) => {
-    const statuses: ProductionStatus[] = [
-      "ready",
-      "dubbing",
-      "subtitles",
-      "published",
-    ];
-    const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
-    const nextStatus = statuses[nextIndex];
+    let nextStatus: ProductionStatus;
+
+    if (currentStatus === "published") {
+      nextStatus = "subtitles";
+    } else {
+      const statuses: ProductionStatus[] = [
+        "ready",
+        "dubbing",
+        "subtitles",
+        "published",
+      ];
+      const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
+      nextStatus = statuses[nextIndex];
+    }
 
     setVideos(
       videos.map((v) => (v.id === id ? { ...v, status: nextStatus } : v)),
