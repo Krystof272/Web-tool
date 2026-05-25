@@ -28,6 +28,7 @@ function App() {
   const [collapsedVideos, setCollapsedVideos] = useState<string[]>([]);
   const [collapsedInvoices, setCollapsedInvoices] = useState<string[]>([]);
   const [collapsedPublished, setCollapsedPublished] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isConfigured, setIsConfigured] = useState(false);
 
   // Filter State
@@ -210,6 +211,32 @@ function App() {
 
     setVideos(
       videos.map((v) => (v.id === id ? { ...v, status: nextStatus } : v)),
+    );
+  };
+
+  const bulkUpdateStatus = (targetStatus: ProductionStatus) => {
+    if (selectedIds.length === 0) return;
+    setVideos(
+      videos.map((v) =>
+        selectedIds.includes(v.id) ? { ...v, status: targetStatus } : v,
+      ),
+    );
+    setSelectedIds([]);
+  };
+
+  const bulkDeleteVideos = () => {
+    if (selectedIds.length === 0) return;
+    if (
+      window.confirm(`Opravdu chcete smazat ${selectedIds.length} vybraných videí?`)
+    ) {
+      setVideos(videos.filter((v) => !selectedIds.includes(v.id)));
+      setSelectedIds([]);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -639,10 +666,61 @@ function App() {
       )}
 
       <main>
+        {selectedIds.length > 0 && (
+          <div className="bulk-actions-bar">
+            <span className="selection-count">
+              Vybráno: {selectedIds.length} videí
+            </span>
+            <div className="bulk-buttons">
+              <button
+                className="bulk-btn ready"
+                onClick={() => bulkUpdateStatus("ready")}
+              >
+                Reset (Ready)
+              </button>
+              <button
+                className="bulk-btn dubbing"
+                onClick={() => bulkUpdateStatus("dubbing")}
+              >
+                Dabing
+              </button>
+              <button
+                className="bulk-btn subtitles"
+                onClick={() => bulkUpdateStatus("subtitles")}
+              >
+                Titulky
+              </button>
+              <button
+                className="bulk-btn published"
+                onClick={() => bulkUpdateStatus("published")}
+              >
+                Publikovat
+              </button>
+              <button
+                className="bulk-btn delete-all"
+                onClick={bulkDeleteVideos}
+              >
+                Smazat vybrané
+              </button>
+              <button
+                className="bulk-btn cancel"
+                onClick={() => setSelectedIds([])}
+              >
+                Zrušit výběr
+              </button>
+            </div>
+          </div>
+        )}
         {creators.map((creator, index) => {
-          const creatorVideos = videos.filter((v) => {
-            const matchesCreator = v.creator === creator;
-            const matchesApp = v.app === currentApp;
+          // All videos for this creator in current app (for correct summary counts)
+          const allCreatorVideos = videos.filter(
+            (v) => v.creator === creator && v.app === currentApp,
+          );
+          
+          if (allCreatorVideos.length === 0) return null;
+
+          // Filter videos by tag/lang filters for display
+          const filteredVideos = allCreatorVideos.filter((v) => {
             const matchesLang = langFilter
               ? (v.language || "")
                   .toLowerCase()
@@ -651,20 +729,22 @@ function App() {
             const matchesTags = tagFilter
               ? (v.tags || "").toLowerCase().includes(tagFilter.toLowerCase())
               : true;
-
-            return matchesCreator && matchesApp && matchesLang && matchesTags;
+            return matchesLang && matchesTags;
           });
-          if (creatorVideos.length === 0) return null;
 
-          const todoVideos = creatorVideos.filter(
+          // If filters are active and no videos match, hide the section
+          const isFiltering = langFilter !== "" || tagFilter !== "";
+          if (isFiltering && filteredVideos.length === 0) return null;
+
+          const todoVideos = filteredVideos.filter(
             (v) => v.status !== "published",
           );
-          const doneVideos = creatorVideos.filter(
+          const doneVideos = filteredVideos.filter(
             (v) => v.status === "published",
           );
 
           const isCollapsed = collapsedCreators.includes(creator);
-          const publishedCount = creatorVideos.filter(
+          const totalPublishedCount = allCreatorVideos.filter(
             (v) => v.status === "published",
           ).length;
 
@@ -700,8 +780,8 @@ function App() {
                 {isCollapsed && (
                   <div className="creator-summary">
                     <span className="summary-item">
-                      <Circle size={14} fill="currentColor" /> {publishedCount}/
-                      {creatorVideos.length} Publikováno
+                      <Circle size={14} fill="currentColor" /> {totalPublishedCount}/
+                      {allCreatorVideos.length} Publikováno
                     </span>
                     <span className="summary-item">
                       <FileText size={14} /> {paidInvoicesCount}/
@@ -730,17 +810,41 @@ function App() {
                     </div>
 
                     {!collapsedVideos.includes(creator) && (
-                      <div className="video-table-container">
-                        {todoVideos.length === 0 ? (
-                          <p className="no-videos">
-                            Všechna videa jsou publikována! 🎉
-                          </p>
-                        ) : (
-                          <table>
-                            <thead>
-                              <tr>
-                                <th className="col-title">Název</th>
-                                <th className="col-status">
+                    <div className="video-table-container">
+                    {todoVideos.length === 0 ? (
+                      <p className="no-videos">
+                        {isFiltering 
+                          ? "Žádná nepublikovaná videa nevyhovují filtrům." 
+                          : "Všechna videa jsou publikována! 🎉"}
+                      </p>
+                    ) : (
+                      <table>
+                        <thead>
+                          <tr>
+                            <th className="col-select">
+                              <input
+                                type="checkbox"
+                                checked={
+                                  todoVideos.length > 0 &&
+                                  todoVideos.every((v) =>
+                                    selectedIds.includes(v.id),
+                                  )
+                                }
+                                onChange={(e) => {
+                                  const ids = todoVideos.map((v) => v.id);
+                                  if (e.target.checked) {
+                                    setSelectedIds((prev) => [
+                                      ...new Set([...prev, ...ids]),
+                                    ]);
+                                  } else {
+                                    setSelectedIds((prev) =>
+                                      prev.filter((id) => !ids.includes(id)),
+                                    );
+                                  }
+                                }}
+                              />
+                            </th>
+                            <th className="col-title">Název</th>                                <th className="col-status">
                                   <div className="header-workflow">
                                     <span className="stage-dubbing">
                                       Dabing
@@ -768,10 +872,16 @@ function App() {
                               </tr>
                             </thead>
                             <tbody>
-                              {todoVideos.map((video) => (
-                                <tr key={video.id}>
-                                  <td className="col-title">
-                                    <div className="title-with-link">
+                            {todoVideos.map((video) => (
+                              <tr key={video.id}>
+                                <td className="col-select">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedIds.includes(video.id)}
+                                    onChange={() => toggleSelection(video.id)}
+                                  />
+                                </td>
+                                <td className="col-title">                                    <div className="title-with-link">
                                       <input
                                         className="table-editable-field"
                                         value={video.title}
@@ -922,6 +1032,29 @@ function App() {
                           <table>
                             <thead>
                               <tr>
+                                <th className="col-select">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      doneVideos.length > 0 &&
+                                      doneVideos.every((v) =>
+                                        selectedIds.includes(v.id),
+                                      )
+                                    }
+                                    onChange={(e) => {
+                                      const ids = doneVideos.map((v) => v.id);
+                                      if (e.target.checked) {
+                                        setSelectedIds((prev) => [
+                                          ...new Set([...prev, ...ids]),
+                                        ]);
+                                      } else {
+                                        setSelectedIds((prev) =>
+                                          prev.filter((id) => !ids.includes(id)),
+                                        );
+                                      }
+                                    }}
+                                  />
+                                </th>
                                 <th className="col-title">Název</th>
                                 <th className="col-status">Stav</th>
                                 <th className="col-lang">Jazyk</th>
@@ -933,6 +1066,13 @@ function App() {
                             <tbody>
                               {doneVideos.map((video) => (
                                 <tr key={video.id}>
+                                  <td className="col-select">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedIds.includes(video.id)}
+                                      onChange={() => toggleSelection(video.id)}
+                                    />
+                                  </td>
                                   <td className="col-title">
                                     <div className="title-with-link">
                                       <input
