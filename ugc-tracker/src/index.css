@@ -752,23 +752,30 @@ tr:hover {
 }
 
 .add-invoice-btn {
-  background: transparent;
-  border: 1px dashed #444;
-  color: #888;
-  padding: 0.3rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  background: rgba(100, 108, 255, 0.15);
+  border: 1.5px solid #646cff;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  transition: all 0.2s;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .add-invoice-btn:hover {
-  border-color: #646cff;
-  color: #646cff;
-  background: rgba(100, 108, 255, 0.05);
+  background: #646cff;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+}
+
+.add-invoice-btn svg {
+  stroke-width: 2.5px;
 }
 
 .invoices-content {
@@ -849,6 +856,25 @@ tr:hover {
 .invoice-date-wrapper:hover .invoice-date-display {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
+}
+
+.invoice-status-cycle {
+  display: flex;
+  cursor: pointer;
+  user-select: none;
+  min-width: 120px;
+}
+
+.invoice-status-cycle .status-chip {
+  width: 100%;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.status-chip.empty {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed #444;
+  color: #666;
 }
 
 .invoice-status-group {

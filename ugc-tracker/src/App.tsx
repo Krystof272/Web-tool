@@ -370,6 +370,23 @@ function App() {
     );
   };
 
+  const toggleInvoiceStatus = (id: string) => {
+    setInvoices(
+      invoices.map((inv) => {
+        if (inv.id !== id) return inv;
+
+        // Cycle: Nothing -> Received -> Paid -> Nothing
+        if (!inv.isReceived && !inv.isPaid) {
+          return { ...inv, isReceived: true, isPaid: false };
+        } else if (inv.isReceived && !inv.isPaid) {
+          return { ...inv, isReceived: true, isPaid: true };
+        } else {
+          return { ...inv, isReceived: false, isPaid: false };
+        }
+      }),
+    );
+  };
+
   const deleteInvoice = (id: string) => {
     if (window.confirm("Opravdu smazat tuto fakturu?")) {
       setInvoices(invoices.filter((inv) => inv.id !== id));
@@ -1109,35 +1126,27 @@ function App() {
                                       </div>
                                     </td>{" "}
                                     <td>
-                                      <div className="invoice-status-group">
-                                        <button
-                                          className={`status-chip ${inv.isReceived ? "active received" : ""}`}
-                                          onClick={() =>
-                                            updateInvoice(
-                                              inv.id,
-                                              "isReceived",
-                                              !inv.isReceived,
-                                            )
-                                          }
-                                        >
-                                          {inv.isReceived && (
-                                            <Check size={12} />
-                                          )}{" "}
-                                          Přijato
-                                        </button>
-                                        <button
-                                          className={`status-chip ${inv.isPaid ? "active paid" : ""}`}
-                                          onClick={() =>
-                                            updateInvoice(
-                                              inv.id,
-                                              "isPaid",
-                                              !inv.isPaid,
-                                            )
-                                          }
-                                        >
-                                          {inv.isPaid && <Check size={12} />}{" "}
-                                          Zaplaceno
-                                        </button>
+                                      <div
+                                        className="invoice-status-cycle"
+                                        onClick={() =>
+                                          toggleInvoiceStatus(inv.id)
+                                        }
+                                      >
+                                        {!inv.isReceived && !inv.isPaid && (
+                                          <span className="status-chip empty">
+                                            Žádný stav
+                                          </span>
+                                        )}
+                                        {inv.isReceived && !inv.isPaid && (
+                                          <span className="status-chip active received">
+                                            <Check size={12} /> Přijato
+                                          </span>
+                                        )}
+                                        {inv.isPaid && (
+                                          <span className="status-chip active paid">
+                                            <Check size={12} /> Zaplaceno
+                                          </span>
+                                        )}
                                       </div>
                                     </td>
                                     <td className="col-actions">
