@@ -17,7 +17,7 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 - **Správa Tvůrců a Aplikací:** Centrální okna pro správu seznamu tvůrců a aplikací s automatickou migrací dat při přejmenování.
 - **Poznámky:** Pole pro poznámky se po kliknutí rozbalí do prostorného editoru pro pohodlnou úpravu dlouhých textů.
 - **Video Odkazy a Cesty:** Cesty k souborům (lokální i cloudové) lze editovat přímo v řádku tabulky. Tlačítko "Kopírovat" umožňuje rychlé zkopírování cesty pro bleskové otevření ve Finderu/Exploreru.
-- **Světlý/Tmavý režim:** Plná podpora přepínání mezi Light a Dark motivem s pamětí volby.
+- **Tmavý režim:** Aplikace je optimalizována pro tmavý režim pro pohodlnou práci v produkčním prostředí.
 - **Zálohování:** Funkce pro Export a Import kompletních dat ve formátu JSON.
 
 ## Instalace a Spuštění
@@ -40,7 +40,7 @@ V kořenovém adresáři se nachází pomocné skripty. Stačí na ně dvakrát 
 
 ## Vývojové Konvence
 
-- **Vzhled:** Čisté CSS (`src/index.css`) s využitím CSS proměnných pro správu Light/Dark režimu. Kompaktní, sticky záhlaví.
+- **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví.
 - **Stav:** Aplikace využívá React `useState` a `useEffect` pro synchronizaci komplexního stavu s `localStorage`.
 - **Typy:** TypeScript rozhraní jsou v `src/types.ts`.
 
@@ -48,9 +48,9 @@ V kořenovém adresáři se nachází pomocné skripty. Stačí na ně dvakrát 
 
 - `src/App.tsx`: Hlavní logika aplikace, UI komponenty a správa stavu.
 - `src/types.ts`: Definice datových struktur.
-- `src/index.css`: Globální styly, CSS proměnné pro témata.
+- `src/index.css`: Globální styly.
 - `Spustit_Tracker.bat` / `Spustit_Mac.command`: Pomocné spouštěcí skripty.
 
 ## Stav Projektu
 
-- **Květen 2026 (Aktualizace):** Přidán Light/Dark mód, neomezená správa aplikací, hromadné akce s videi (multi-select), optimalizováno UI (kompaktní sticky záhlaví, velké pole poznámek, inline editace URL) a vytvořen spouštěč pro macOS. Projekt úspěšně prochází build procesem (`npm run build`).
+- **Květen 2026 (Aktualizace):** Odebrán Light Mode (aplikace je nyní pouze v Dark Mode), neomezená správa aplikací, hromadné akce s videi (multi-select), optimalizováno UI (kompaktní sticky záhlaví, velké pole poznámek, inline editace URL) a vytvořen spouštěč pro macOS. Projekt úspěšně prochází build procesem (`npm run build`).
