@@ -5,7 +5,6 @@ import {
   Circle,
   Trash2,
   Globe,
-  ExternalLink,
   ChevronDown,
   ChevronRight,
   Download,
@@ -13,6 +12,7 @@ import {
   FileText,
   Calendar,
   Check,
+  Copy,
 } from "lucide-react";
 const STORAGE_KEY = "ugc_tracker_data";
 
@@ -881,32 +881,50 @@ function App() {
                                     onChange={() => toggleSelection(video.id)}
                                   />
                                 </td>
-                                <td className="col-title">                                    <div className="title-with-link">
+                                <td className="col-title">
+                                  <div className="title-edit-group">
+                                    <input
+                                      className="table-editable-field title-field"
+                                      value={video.title}
+                                      onChange={(e) =>
+                                        updateVideoField(
+                                          video.id,
+                                          "title",
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                    <div className="url-edit-wrapper">
                                       <input
-                                        className="table-editable-field"
-                                        value={video.title}
+                                        className="table-editable-field url-field"
+                                        placeholder="Vložte odkaz nebo cestu..."
+                                        value={video.videoUrl || ""}
                                         onChange={(e) =>
                                           updateVideoField(
                                             video.id,
-                                            "title",
+                                            "videoUrl",
                                             e.target.value,
                                           )
                                         }
                                       />
                                       {video.videoUrl && (
-                                        <a
-                                          href={video.videoUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="video-link-icon"
-                                          title="Otevřít odkaz"
+                                        <button
+                                          className="copy-link-btn"
+                                          title="Kopírovat cestu/odkaz"
+                                          onClick={() => {
+                                            if (video.videoUrl) {
+                                              navigator.clipboard.writeText(
+                                                video.videoUrl,
+                                              );
+                                            }
+                                          }}
                                         >
-                                          <ExternalLink size={14} />
-                                        </a>
+                                          <Copy size={14} />
+                                        </button>
                                       )}
                                     </div>
-                                  </td>
-                                  <td className="col-status">
+                                  </div>
+                                </td>                                  <td className="col-status">
                                     <div className="table-checklist">
                                       {[
                                         { key: "dubbing", label: "Dabing" },
@@ -1074,9 +1092,9 @@ function App() {
                                     />
                                   </td>
                                   <td className="col-title">
-                                    <div className="title-with-link">
+                                    <div className="title-edit-group">
                                       <input
-                                        className="table-editable-field"
+                                        className="table-editable-field title-field"
                                         value={video.title}
                                         onChange={(e) =>
                                           updateVideoField(
@@ -1086,19 +1104,37 @@ function App() {
                                           )
                                         }
                                       />
+                                    <div className="url-edit-wrapper">
+                                      <input
+                                        className="table-editable-field url-field"
+                                        placeholder="Vložte odkaz nebo cestu..."
+                                        value={video.videoUrl || ""}
+                                        onChange={(e) =>
+                                          updateVideoField(
+                                            video.id,
+                                            "videoUrl",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
                                       {video.videoUrl && (
-                                        <a
-                                          href={video.videoUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="video-link-icon"
-                                          title="Otevřít odkaz"
+                                        <button
+                                          className="copy-link-btn"
+                                          title="Kopírovat cestu/odkaz"
+                                          onClick={() => {
+                                            if (video.videoUrl) {
+                                              navigator.clipboard.writeText(
+                                                video.videoUrl,
+                                              );
+                                            }
+                                          }}
                                         >
-                                          <ExternalLink size={14} />
-                                        </a>
+                                          <Copy size={14} />
+                                        </button>
                                       )}
                                     </div>
-                                  </td>
+                                  </div>
+                                </td>
                                   <td className="col-status">
                                     <div className="table-checklist">
                                       <div

@@ -592,15 +592,72 @@ tr:hover {
   gap: 0.5rem;
 }
 
-.video-link-icon {
-  color: #646cff;
+.title-edit-group {
   display: flex;
-  align-items: center;
-  transition: color 0.2s;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
 }
 
-.video-link-icon:hover {
+.title-field {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.url-edit-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.url-icon {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.url-field {
+  font-size: 0.75rem !important;
+  color: #888 !important;
+  font-style: italic;
+}
+
+.url-field:focus {
+  color: #646cff !important;
+}
+
+.link-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.5rem;
+}
+
+.video-link-icon, .copy-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: #646cff;
+  transition: all 0.2s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.video-link-icon:hover, .copy-link-btn:hover {
+  background: rgba(100, 108, 255, 0.1);
   color: #4ade80;
+}
+
+.copy-link-btn:active {
+  transform: scale(0.9);
 }
 
 .table-tags {
