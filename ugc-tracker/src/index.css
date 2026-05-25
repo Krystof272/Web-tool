@@ -560,12 +560,12 @@ table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
 }
 
 th {
   background: var(--table-header);
-  padding: 0.6rem 0.8rem;
+  padding: 0.4rem 0.6rem;
   font-weight: 600;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-input);
@@ -573,7 +573,7 @@ th {
 }
 
 td {
-  padding: 0.5rem 0.8rem;
+  padding: 0.3rem 0.6rem;
   border-bottom: 1px solid var(--table-border);
   vertical-align: middle;
 }
@@ -582,23 +582,23 @@ tr:hover {
   background: var(--table-hover);
 }
 
-.col-lang { width: 140px; }
-.col-tags { width: 160px; }
-.col-link { width: 140px; }
-.col-notes { width: 140px; position: relative; }
-.col-status { width: 200px; }
-.col-title { min-width: 160px; }
+.col-lang { width: 120px; }
+.col-tags { width: 140px; }
+.col-link { width: 120px; }
+.col-notes { width: 120px; position: relative; }
+.col-status { width: 180px; }
+.col-title { min-width: 140px; }
 
 /* New Chip Styles (Updated from Image Reference) */
 .chips-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px;
-  min-height: 38px;
+  gap: 4px;
+  padding: 4px;
+  min-height: 28px;
   align-items: center;
   cursor: text;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid transparent;
   transition: all 0.2s;
 }
@@ -609,9 +609,9 @@ tr:hover {
 }
 
 .chip {
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -644,28 +644,28 @@ tr:hover {
   border: none;
   color: var(--text-main);
   font-family: inherit;
-  font-size: 0.85rem;
-  padding: 4px;
+  font-size: 0.75rem;
+  padding: 2px;
   flex: 1;
-  min-width: 40px;
+  min-width: 30px;
   outline: none;
 }
 
 .col-title .table-editable-field {
   font-weight: 700;
   color: var(--text-main);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
 }
 
 .header-workflow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 8px;
 }
 
 .header-workflow span {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
@@ -691,7 +691,7 @@ tr:hover {
 .table-checklist {
   display: flex;
   justify-content: space-between;
-  padding: 0 6px;
+  padding: 0 4px;
 }
 
 .table-check-item {
@@ -699,7 +699,7 @@ tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 3px;
   border-radius: 4px;
   transition: background 0.2s;
   flex: 1;
@@ -712,28 +712,28 @@ tr:hover {
 .title-with-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .title-edit-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.2rem;
   width: 100%;
 }
 
 .title-field {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   color: var(--text-main);
 }
 
 .url-edit-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.3rem;
   background: rgba(0, 0, 0, 0.1);
-  padding: 0.1rem 0.4rem;
+  padding: 0.1rem 0.3rem;
   border-radius: 4px;
   width: fit-content;
 }
@@ -744,11 +744,11 @@ tr:hover {
 }
 
 .url-field {
-  font-size: 0.75rem !important;
+  font-size: 0.7rem !important;
   color: var(--text-muted) !important;
   font-style: italic;
   width: 40px !important;
-  padding: 4px 4px !important;
+  padding: 2px 4px !important;
   flex-shrink: 0;
   transition: width 0.2s ease-in-out !important;
 }
@@ -762,16 +762,16 @@ tr:hover {
 .link-actions {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  margin-left: 0.5rem;
+  gap: 0.2rem;
+  margin-left: 0.4rem;
 }
 
 .video-link-icon, .copy-link-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 4px;
   color: var(--accent-color);
   transition: all 0.2s;
@@ -793,14 +793,14 @@ tr:hover {
 .table-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.2rem;
 }
 
 .table-tag {
   background: var(--bg-item);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
   color: var(--text-main);
   font-weight: 600;
   border: 1px solid var(--border-input);
@@ -812,8 +812,8 @@ tr:hover {
   border: 1px solid transparent;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.85rem;
-  padding: 4px 8px;
+  font-size: 0.75rem;
+  padding: 2px 6px;
   border-radius: 4px;
   transition: all 0.15s ease-in-out;
 }
@@ -844,9 +844,9 @@ tr:hover {
 .table-notes-container {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  min-height: 60px;
-  padding: 4px 0;
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 2px 0;
 }
 
 .table-editable-notes {
@@ -855,12 +855,12 @@ tr:hover {
   border: 1px solid transparent;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.82rem;
-  padding: 6px 8px;
+  font-size: 0.75rem;
+  padding: 4px 6px;
   border-radius: 4px;
   resize: none;
-  height: 54px;
-  line-height: 1.3;
+  height: 38px;
+  line-height: 1.2;
   overflow-y: auto;
   transition: all 0.2s ease;
   scrollbar-width: thin;
@@ -875,7 +875,7 @@ tr:hover {
   z-index: 2000; /* Above header (1100), bulk bar (1200), and all table items */
   box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   margin-left: -350px; /* Expand to the left to stay on screen */
-  padding: 12px;
+  padding: 10px;
   white-space: normal;
   overflow-y: auto;
   outline: none;
