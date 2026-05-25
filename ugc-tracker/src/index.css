@@ -64,8 +64,8 @@
 /* Bulk Actions */
 .bulk-actions-bar {
   position: sticky;
-  top: 70px;
-  z-index: 1050;
+  top: 110px; /* Adjusted for taller header */
+  z-index: 1200; /* Higher than header (1100) */
   background: var(--bg-bulk);
   border: 1px solid var(--border-color);
   padding: 0.8rem 1.5rem;
