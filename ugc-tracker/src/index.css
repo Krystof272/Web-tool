@@ -16,8 +16,8 @@
 /* Bulk Actions */
 .bulk-actions-bar {
   position: sticky;
-  top: 1rem;
-  z-index: 100;
+  top: 70px;
+  z-index: 1050;
   background: #1e1e1e;
   border: 1px solid #333;
   padding: 0.8rem 1.5rem;
@@ -96,25 +96,34 @@ body {
 }
 
 header {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background-color: #242424;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #444;
-  padding-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid #333;
+  padding: 0.8rem 1.5rem;
+  margin-left: -2rem;
+  margin-right: -2rem;
+  margin-top: -2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .add-btn {
   background-color: #646cff;
   color: white;
-  padding: 0.6em 1.2em;
-  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .add-btn:hover {
@@ -124,22 +133,28 @@ header {
 .app-title {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
+}
+
+.app-title h1 {
+  font-size: 1.6rem;
+  margin: 0;
+  color: #646cff;
 }
 
 .app-tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
 .tab {
   background: transparent;
   border: 1px solid #444;
   color: #aaa;
-  padding: 0.4rem 1rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: all 0.2s;
 }
 
@@ -713,9 +728,10 @@ tr:hover {
 
 .table-notes-container {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
-  height: 32px; /* Fixed height for the row */
+  min-height: 60px;
+  padding: 4px 0;
 }
 
 .table-editable-notes {
@@ -724,30 +740,35 @@ tr:hover {
   border: 1px solid transparent;
   color: #ccc;
   font-family: inherit;
-  font-size: 0.85rem;
-  padding: 4px 8px;
+  font-size: 0.82rem;
+  padding: 6px 8px;
   border-radius: 4px;
   resize: none;
-  height: 28px;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: all 0.15s ease-in-out;
+  height: 54px;
+  line-height: 1.3;
+  overflow-y: auto;
+  transition: all 0.2s ease;
+  scrollbar-width: thin;
 }
 
 .table-editable-notes:focus {
   background: #1a1a1a;
   border-color: #646cff;
-  height: 120px;
+  height: 250px;
+  width: 450px;
+  position: absolute;
+  z-index: 1000;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  margin-left: -350px; /* Expand to the left to stay on screen */
+  padding: 12px;
   white-space: normal;
   overflow-y: auto;
   outline: none;
-  position: absolute;
-  width: 300px;
-  z-index: 100;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  margin-top: -46px; /* Shift up to show more content while focused */
+}
+
+.col-notes {
+  width: 200px;
+  position: relative;
 }
 
 .delete-btn {

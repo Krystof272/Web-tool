@@ -227,7 +227,9 @@ function App() {
   const bulkDeleteVideos = () => {
     if (selectedIds.length === 0) return;
     if (
-      window.confirm(`Opravdu chcete smazat ${selectedIds.length} vybraných videí?`)
+      window.confirm(
+        `Opravdu chcete smazat ${selectedIds.length} vybraných videí?`,
+      )
     ) {
       setVideos(videos.filter((v) => !selectedIds.includes(v.id)));
       setSelectedIds([]);
@@ -626,7 +628,7 @@ function App() {
             </select>
             <input
               type="text"
-              placeholder="Odkaz na video (URL)"
+              placeholder="odkaz na cestu k videu"
               value={newVideo.videoUrl}
               onChange={(e) =>
                 setNewVideo({ ...newVideo, videoUrl: e.target.value })
@@ -716,7 +718,7 @@ function App() {
           const allCreatorVideos = videos.filter(
             (v) => v.creator === creator && v.app === currentApp,
           );
-          
+
           if (allCreatorVideos.length === 0) return null;
 
           // Filter videos by tag/lang filters for display
@@ -780,8 +782,9 @@ function App() {
                 {isCollapsed && (
                   <div className="creator-summary">
                     <span className="summary-item">
-                      <Circle size={14} fill="currentColor" /> {totalPublishedCount}/
-                      {allCreatorVideos.length} Publikováno
+                      <Circle size={14} fill="currentColor" />{" "}
+                      {totalPublishedCount}/{allCreatorVideos.length}{" "}
+                      Publikováno
                     </span>
                     <span className="summary-item">
                       <FileText size={14} /> {paidInvoicesCount}/
@@ -810,41 +813,44 @@ function App() {
                     </div>
 
                     {!collapsedVideos.includes(creator) && (
-                    <div className="video-table-container">
-                    {todoVideos.length === 0 ? (
-                      <p className="no-videos">
-                        {isFiltering 
-                          ? "Žádná nepublikovaná videa nevyhovují filtrům." 
-                          : "Všechna videa jsou publikována! 🎉"}
-                      </p>
-                    ) : (
-                      <table>
-                        <thead>
-                          <tr>
-                            <th className="col-select">
-                              <input
-                                type="checkbox"
-                                checked={
-                                  todoVideos.length > 0 &&
-                                  todoVideos.every((v) =>
-                                    selectedIds.includes(v.id),
-                                  )
-                                }
-                                onChange={(e) => {
-                                  const ids = todoVideos.map((v) => v.id);
-                                  if (e.target.checked) {
-                                    setSelectedIds((prev) => [
-                                      ...new Set([...prev, ...ids]),
-                                    ]);
-                                  } else {
-                                    setSelectedIds((prev) =>
-                                      prev.filter((id) => !ids.includes(id)),
-                                    );
-                                  }
-                                }}
-                              />
-                            </th>
-                            <th className="col-title">Název</th>                                <th className="col-status">
+                      <div className="video-table-container">
+                        {todoVideos.length === 0 ? (
+                          <p className="no-videos">
+                            {isFiltering
+                              ? "Žádná nepublikovaná videa nevyhovují filtrům."
+                              : "Všechna videa jsou publikována! 🎉"}
+                          </p>
+                        ) : (
+                          <table>
+                            <thead>
+                              <tr>
+                                <th className="col-select">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      todoVideos.length > 0 &&
+                                      todoVideos.every((v) =>
+                                        selectedIds.includes(v.id),
+                                      )
+                                    }
+                                    onChange={(e) => {
+                                      const ids = todoVideos.map((v) => v.id);
+                                      if (e.target.checked) {
+                                        setSelectedIds((prev) => [
+                                          ...new Set([...prev, ...ids]),
+                                        ]);
+                                      } else {
+                                        setSelectedIds((prev) =>
+                                          prev.filter(
+                                            (id) => !ids.includes(id),
+                                          ),
+                                        );
+                                      }
+                                    }}
+                                  />
+                                </th>
+                                <th className="col-title">Název</th>{" "}
+                                <th className="col-status">
                                   <div className="header-workflow">
                                     <span className="stage-dubbing">
                                       Dabing
@@ -872,59 +878,60 @@ function App() {
                               </tr>
                             </thead>
                             <tbody>
-                            {todoVideos.map((video) => (
-                              <tr key={video.id}>
-                                <td className="col-select">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedIds.includes(video.id)}
-                                    onChange={() => toggleSelection(video.id)}
-                                  />
-                                </td>
-                                <td className="col-title">
-                                  <div className="title-edit-group">
+                              {todoVideos.map((video) => (
+                                <tr key={video.id}>
+                                  <td className="col-select">
                                     <input
-                                      className="table-editable-field title-field"
-                                      value={video.title}
-                                      onChange={(e) =>
-                                        updateVideoField(
-                                          video.id,
-                                          "title",
-                                          e.target.value,
-                                        )
-                                      }
+                                      type="checkbox"
+                                      checked={selectedIds.includes(video.id)}
+                                      onChange={() => toggleSelection(video.id)}
                                     />
-                                    <div className="url-edit-wrapper">
+                                  </td>
+                                  <td className="col-title">
+                                    <div className="title-edit-group">
                                       <input
-                                        className="table-editable-field url-field"
-                                        placeholder="Vložte odkaz nebo cestu..."
-                                        value={video.videoUrl || ""}
+                                        className="table-editable-field title-field"
+                                        value={video.title}
                                         onChange={(e) =>
                                           updateVideoField(
                                             video.id,
-                                            "videoUrl",
+                                            "title",
                                             e.target.value,
                                           )
                                         }
                                       />
-                                      {video.videoUrl && (
-                                        <button
-                                          className="copy-link-btn"
-                                          title="Kopírovat cestu/odkaz"
-                                          onClick={() => {
-                                            if (video.videoUrl) {
-                                              navigator.clipboard.writeText(
-                                                video.videoUrl,
-                                              );
-                                            }
-                                          }}
-                                        >
-                                          <Copy size={14} />
-                                        </button>
-                                      )}
+                                      <div className="url-edit-wrapper">
+                                        <input
+                                          className="table-editable-field url-field"
+                                          placeholder="Vložte odkaz nebo cestu..."
+                                          value={video.videoUrl || ""}
+                                          onChange={(e) =>
+                                            updateVideoField(
+                                              video.id,
+                                              "videoUrl",
+                                              e.target.value,
+                                            )
+                                          }
+                                        />
+                                        {video.videoUrl && (
+                                          <button
+                                            className="copy-link-btn"
+                                            title="Kopírovat cestu/odkaz"
+                                            onClick={() => {
+                                              if (video.videoUrl) {
+                                                navigator.clipboard.writeText(
+                                                  video.videoUrl,
+                                                );
+                                              }
+                                            }}
+                                          >
+                                            <Copy size={14} />
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                </td>                                  <td className="col-status">
+                                  </td>{" "}
+                                  <td className="col-status">
                                     <div className="table-checklist">
                                       {[
                                         { key: "dubbing", label: "Dabing" },
@@ -1067,7 +1074,9 @@ function App() {
                                         ]);
                                       } else {
                                         setSelectedIds((prev) =>
-                                          prev.filter((id) => !ids.includes(id)),
+                                          prev.filter(
+                                            (id) => !ids.includes(id),
+                                          ),
                                         );
                                       }
                                     }}
@@ -1104,37 +1113,37 @@ function App() {
                                           )
                                         }
                                       />
-                                    <div className="url-edit-wrapper">
-                                      <input
-                                        className="table-editable-field url-field"
-                                        placeholder="Vložte odkaz nebo cestu..."
-                                        value={video.videoUrl || ""}
-                                        onChange={(e) =>
-                                          updateVideoField(
-                                            video.id,
-                                            "videoUrl",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                      {video.videoUrl && (
-                                        <button
-                                          className="copy-link-btn"
-                                          title="Kopírovat cestu/odkaz"
-                                          onClick={() => {
-                                            if (video.videoUrl) {
-                                              navigator.clipboard.writeText(
-                                                video.videoUrl,
-                                              );
-                                            }
-                                          }}
-                                        >
-                                          <Copy size={14} />
-                                        </button>
-                                      )}
+                                      <div className="url-edit-wrapper">
+                                        <input
+                                          className="table-editable-field url-field"
+                                          placeholder="Vložte odkaz nebo cestu..."
+                                          value={video.videoUrl || ""}
+                                          onChange={(e) =>
+                                            updateVideoField(
+                                              video.id,
+                                              "videoUrl",
+                                              e.target.value,
+                                            )
+                                          }
+                                        />
+                                        {video.videoUrl && (
+                                          <button
+                                            className="copy-link-btn"
+                                            title="Kopírovat cestu/odkaz"
+                                            onClick={() => {
+                                              if (video.videoUrl) {
+                                                navigator.clipboard.writeText(
+                                                  video.videoUrl,
+                                                );
+                                              }
+                                            }}
+                                          >
+                                            <Copy size={14} />
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                </td>
+                                  </td>
                                   <td className="col-status">
                                     <div className="table-checklist">
                                       <div
