@@ -653,34 +653,77 @@ function App() {
     filterType: "lang" | "other",
   ) => {
     const languages = ["cz", "cs", "en", "sk", "de", "fr", "es", "it", "pl"];
-    const availableTags = tagConfigs.filter((c) => {
+    const allConfigsForType = tagConfigs.filter((c) => {
       const isLang = languages.includes(c.name.toLowerCase().trim());
       return filterType === "lang" ? isLang : !isLang;
     });
 
-    const activeTags = currentValue
+    const activeTagNames = currentValue
       .split(",")
-      .map((t) => t.trim().toLowerCase());
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+
+    const selectedTags = allConfigsForType.filter((c) =>
+      activeTagNames.some((n) => n.toLowerCase() === c.name.toLowerCase()),
+    );
+    const availableTags = allConfigsForType.filter(
+      (c) =>
+        !activeTagNames.some((n) => n.toLowerCase() === c.name.toLowerCase()),
+    );
 
     return (
-      <div className="tag-selector-grid">
-        {availableTags.map((t) => {
-          const isActive = activeTags.includes(t.name.toLowerCase());
-          const { className, style } = getTagStyle(t.name);
-          return (
-            <span
-              key={t.name}
-              className={`chip selectable-chip ${className} ${isActive ? "active" : ""}`}
-              style={isActive ? style : {}}
-              onClick={() => onToggle(toggleTagInString(currentValue, t.name))}
-            >
-              {t.name}
-            </span>
-          );
-        })}
-        {availableTags.length === 0 && (
-          <p className="no-tags-hint">Žádné tagy v nastavení.</p>
+      <div className="tag-selection-container">
+        {selectedTags.length > 0 && (
+          <div className="tag-group-area selected">
+            <div className="tag-group-label">Vybrané:</div>
+            <div className="tag-selector-grid">
+              {selectedTags.map((t) => {
+                const { className, style } = getTagStyle(t.name);
+                return (
+                  <span
+                    key={t.name}
+                    className={`chip selectable-chip active ${className}`}
+                    style={style}
+                    onClick={() =>
+                      onToggle(toggleTagInString(currentValue, t.name))
+                    }
+                    title="Odebrat"
+                  >
+                    {t.name} ×
+                  </span>
+                );
+              })}
+            </div>
+          </div>
         )}
+
+        <div className="tag-group-area available">
+          <div className="tag-group-label">K výběru:</div>
+          <div className="tag-selector-grid">
+            {availableTags.map((t) => {
+              const { className, style } = getTagStyle(t.name);
+              return (
+                <span
+                  key={t.name}
+                  className={`chip selectable-chip ${className}`}
+                  style={{ opacity: 0.7 }}
+                  onClick={() =>
+                    onToggle(toggleTagInString(currentValue, t.name))
+                  }
+                  title="Přidat"
+                >
+                  + {t.name}
+                </span>
+              );
+            })}
+            {availableTags.length === 0 && selectedTags.length === 0 && (
+              <p className="no-tags-hint">Žádné tagy v nastavení.</p>
+            )}
+            {availableTags.length === 0 && selectedTags.length > 0 && (
+              <p className="no-tags-hint">Všechny tagy vybrány.</p>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -1812,23 +1855,27 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "language" ? (
-                                      <input
-                                        autoFocus
-                                        className="table-editable-field lang-edit-field"
-                                        value={video.language}
-                                        onBlur={() => setEditingField(null)}
-                                        onKeyDown={(e) =>
-                                          e.key === "Enter" &&
-                                          setEditingField(null)
-                                        }
-                                        onChange={(e) =>
-                                          updateVideoField(
-                                            video.id,
-                                            "language",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
+                                      <div className="inline-selector-wrapper">
+                                        {renderTagSelector(
+                                          video.language,
+                                          (val) =>
+                                            updateVideoField(
+                                              video.id,
+                                              "language",
+                                              val,
+                                            ),
+                                          "lang",
+                                        )}
+                                        <button
+                                          className="close-selector-btn"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingField(null);
+                                          }}
+                                        >
+                                          Hotovo
+                                        </button>
+                                      </div>
                                     ) : (
                                       <div className="chips-container">
                                         <Globe size={12} className="url-icon" />
@@ -1849,16 +1896,6 @@ function App() {
                                               </span>
                                             );
                                           })}
-                                        {!(video.language || "").trim() && (
-                                          <span
-                                            style={{
-                                              color: "var(--text-muted)",
-                                              fontSize: "0.8rem",
-                                            }}
-                                          >
-                                            +
-                                          </span>
-                                        )}
                                       </div>
                                     )}
                                   </td>
@@ -1873,24 +1910,27 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "tags" ? (
-                                      <input
-                                        autoFocus
-                                        className="table-editable-field"
-                                        placeholder="Tagy..."
-                                        value={video.tags}
-                                        onBlur={() => setEditingField(null)}
-                                        onKeyDown={(e) =>
-                                          e.key === "Enter" &&
-                                          setEditingField(null)
-                                        }
-                                        onChange={(e) =>
-                                          updateVideoField(
-                                            video.id,
-                                            "tags",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
+                                      <div className="inline-selector-wrapper">
+                                        {renderTagSelector(
+                                          video.tags,
+                                          (val) =>
+                                            updateVideoField(
+                                              video.id,
+                                              "tags",
+                                              val,
+                                            ),
+                                          "other",
+                                        )}
+                                        <button
+                                          className="close-selector-btn"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingField(null);
+                                          }}
+                                        >
+                                          Hotovo
+                                        </button>
+                                      </div>
                                     ) : (
                                       <div className="chips-container">
                                         {(video.tags || "")
@@ -1962,21 +2002,22 @@ function App() {
                       <div className="invoices-title">
                         <FileText size={16} />
                         <span>Faktury</span>
+                        <button
+                          className="add-invoice-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addInvoice(creator);
+                          }}
+                          title="Přidat novou fakturu"
+                        >
+                          <Plus size={14} /> Přidat
+                        </button>
                         {collapsedInvoices.includes(creator) ? (
                           <ChevronRight size={14} />
                         ) : (
                           <ChevronDown size={14} />
                         )}
                       </div>
-                      <button
-                        className="add-invoice-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addInvoice(creator);
-                        }}
-                      >
-                        <Plus size={14} /> Přidat Fakturu
-                      </button>
                     </div>
 
                     {!collapsedInvoices.includes(creator) && (
