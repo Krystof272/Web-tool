@@ -143,6 +143,7 @@ function App() {
   const [showCreatorManager, setShowCreatorManager] = useState(false);
   const [showAppManager, setShowAppManager] = useState(false);
   const [showTagManager, setShowTagManager] = useState(false);
+  const [expandedTag, setExpandedTag] = useState<string | null>(null);
   const [newVideo, setNewVideo] = useState({
     title: "",
     creator: INITIAL_CREATORS[0],
@@ -785,63 +786,83 @@ function App() {
             <h2>Správa barev jazyků a tagů</h2>
             <div className="tag-configs-list">
               {Object.entries(tagConfigs).map(([name, color]) => (
-                <div key={name} className="tag-manage-item">
-                  <div className="tag-preview">
-                    {(() => {
-                      const { className, style } = getTagStyle(name);
-                      return (
-                        <span className={`chip ${className}`} style={style}>
-                          {name}
-                        </span>
-                      );
-                    })()}
-                  </div>
-                  <div className="tag-color-controls">
-                    <div className="color-presets-grid">
-                      {TAG_COLOR_PRESETS.map((preset) => (
-                        <div
-                          key={preset}
-                          className={`color-preset ${color === preset ? "active" : ""}`}
-                          style={{ backgroundColor: preset }}
-                          onClick={() => updateTagColor(name, preset)}
-                          title={preset}
-                        />
-                      ))}
-                    </div>
-                    <div className="custom-color-picker">
-                      <div className="picker-pipette-wrapper">
-                        <Pipette size={14} className="pipette-icon" />
-                        <input
-                          type="color"
-                          value={color.startsWith("#") ? color : "#64748b"}
-                          onChange={(e) => updateTagColor(name, e.target.value)}
-                          title="Vybrat vlastní barvu"
-                        />
-                      </div>
-                      <div className="hex-input-wrapper">
-                        <span className="hex-hash">#</span>
-                        <input
-                          type="text"
-                          className="hex-input"
-                          value={color.replace("#", "")}
-                          onChange={(e) => {
-                            const val = e.target.value.trim();
-                            if (val.length <= 6) {
-                              updateTagColor(name, `#${val}`);
-                            }
-                          }}
-                          placeholder="HEX"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => deleteTagConfig(name)}
-                    className="delete-btn"
-                    title="Smazat konfiguraci tagu"
+                <div key={name} className="tag-manage-item-wrapper">
+                  <div
+                    className={`tag-manage-item ${expandedTag === name ? "expanded" : ""}`}
                   >
-                    <Trash2 size={18} />
-                  </button>
+                    <div
+                      className="tag-preview-toggle"
+                      onClick={() =>
+                        setExpandedTag(expandedTag === name ? null : name)
+                      }
+                      title="Klikněte pro změnu barvy"
+                    >
+                      {(() => {
+                        const { className, style } = getTagStyle(name);
+                        return (
+                          <span className={`chip ${className}`} style={style}>
+                            {name}
+                          </span>
+                        );
+                      })()}
+                      <ChevronDown
+                        size={14}
+                        className={`expand-icon ${expandedTag === name ? "rotated" : ""}`}
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => deleteTagConfig(name)}
+                      className="delete-btn"
+                      title="Smazat konfiguraci tagu"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                  {expandedTag === name && (
+                    <div className="tag-color-controls-expanded">
+                      <div className="color-presets-grid">
+                        {TAG_COLOR_PRESETS.map((preset) => (
+                          <div
+                            key={preset}
+                            className={`color-preset ${color === preset ? "active" : ""}`}
+                            style={{ backgroundColor: preset }}
+                            onClick={() => updateTagColor(name, preset)}
+                            title={preset}
+                          />
+                        ))}
+                      </div>
+                      <div className="custom-color-picker">
+                        <div className="picker-pipette-wrapper">
+                          <Pipette size={14} className="pipette-icon" />
+                          <input
+                            type="color"
+                            value={color.startsWith("#") ? color : "#64748b"}
+                            onChange={(e) =>
+                              updateTagColor(name, e.target.value)
+                            }
+                            title="Vybrat vlastní barvu"
+                          />
+                        </div>
+                        <div className="hex-input-wrapper">
+                          <span className="hex-hash">#</span>
+                          <input
+                            type="text"
+                            className="hex-input"
+                            value={color.replace("#", "")}
+                            onChange={(e) => {
+                              const val = e.target.value.trim();
+                              if (val.length <= 6) {
+                                updateTagColor(name, `#${val}`);
+                              }
+                            }}
+                            placeholder="HEX"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -857,7 +878,10 @@ function App() {
             <div className="modal-actions">
               <button
                 className="cancel"
-                onClick={() => setShowTagManager(false)}
+                onClick={() => {
+                  setShowTagManager(false);
+                  setExpandedTag(null);
+                }}
               >
                 Zavřít
               </button>

@@ -1232,20 +1232,61 @@ tr:hover {
   padding-right: 0.5rem;
 }
 
-.tag-manage-item {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem;
+.tag-manage-item-wrapper {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   margin-bottom: 0.8rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
 }
 
-.light-mode .tag-manage-item {
+.light-mode .tag-manage-item-wrapper {
   background: #f8fafc;
   border-color: #e2e8f0;
+}
+
+.tag-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.2rem;
+  transition: background 0.2s;
+}
+
+.tag-manage-item.expanded {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tag-preview-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.expand-icon {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+  color: var(--accent-color);
+}
+
+.tag-color-controls-expanded {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .tag-preview {
@@ -1254,12 +1295,6 @@ tr:hover {
   justify-content: center;
 }
 
-.tag-color-controls {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
 
 .color-presets-grid {
   display: grid;
