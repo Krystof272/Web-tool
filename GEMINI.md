@@ -14,7 +14,8 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 - **Organizace:** Seskupování videí podle tvůrců. Nově lze neomezeně přidávat, přejmenovávat a mazat aplikace (karty).
 - **Hromadné akce:** Podpora multi-výběru videí (checkboxy) s plovoucí lištou pro hromadnou změnu stavu nebo smazání.
 - **Sbalitelné sekce:** Možnost sbalit sekci tvůrce s rychlým souhrnem progresu (zobrazuje reálný stav i při aktivních filtrech). Vždy viditelní tvůrci i bez videí.
-- **Správa Tvůrců a Aplikací:** Centrální okna pro správu seznamu tvůrců a aplikací s automatickou migrací dat při přejmenování.
+- **Správa Tvůrců, Aplikací a Tagů:** Centrální okna pro správu seznamu tvůrců, aplikací (s migrací dat) a pokročilé barvení tagů.
+- **Chytré barvení tagů:** Možnost přiřadit libovolnou HEX barvu tagům a jazykům. Logika používá inteligentní shodu celých slov (word boundaries), aby se předešlo chybným shodu (např. jazyk "en" už neovlivňuje slovo "recenze").
 - **Poznámky:** Pole pro poznámky se po kliknutí rozbalí do prostorného editoru pro pohodlnou úpravu dlouhých textů.
 - **Video Odkazy a Cesty:** Cesty k souborům (lokální i cloudové) lze editovat přímo v řádku tabulky. Pole pro cestu je ultra-kompaktní a nachází se vedle názvu videa; při kliknutí (focus) se plynule roztáhne pro pohodlnou editaci. Tlačítko "Kopírovat" umožňuje rychlé zkopírování cesty pro bleskové otevření ve Finderu/Exploreru.
 - **Tmavý režim:** Aplikace je optimalizována pro tmavý režim pro pohodlnou práci v produkčním prostředí.

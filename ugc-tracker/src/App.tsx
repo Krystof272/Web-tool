@@ -45,13 +45,13 @@ const TAG_COLOR_PRESETS = [
 
 const DEFAULT_TAG_CONFIGS: Record<string, string> = {
   recenze: "#10b981",
-  cz: "#10b981",
-  cs: "#10b981",
+  cz: "#22c55e",
+  cs: "#22c55e",
   reels: "#a855f7",
-  titulky: "#a855f7",
-  feed: "#3b82f6",
+  titulky: "#8b5cf6",
+  feed: "#0ea5e9",
   pub: "#3b82f6",
-  en: "#3b82f6",
+  en: "#6366f1",
 };
 
 function App() {
@@ -81,11 +81,16 @@ function App() {
 
   const getTagStyle = (text: string) => {
     const t = text.toLowerCase().trim();
+
+    // 1. Exact match (highest priority)
     let color = tagConfigs[t];
 
+    // 2. Smart partial match (word boundaries)
     if (!color) {
       for (const [tagName, c] of Object.entries(tagConfigs)) {
-        if (t.includes(tagName)) {
+        // Only match as a whole word or significant part to avoid "en" matching "recenze"
+        const regex = new RegExp(`\\b${tagName}\\b`, "i");
+        if (regex.test(t)) {
           color = c;
           break;
         }
@@ -777,7 +782,7 @@ function App() {
       {showTagManager && (
         <div className="modal">
           <div className="modal-content tag-manager-modal">
-            <h2>Správa barev tagů</h2>
+            <h2>Správa barev jazyků a tagů</h2>
             <div className="tag-configs-list">
               {Object.entries(tagConfigs).map(([name, color]) => (
                 <div key={name} className="tag-manage-item">
@@ -836,7 +841,7 @@ function App() {
                 if (name) addTagConfig(name);
               }}
             >
-              <Plus size={18} /> Přidat Tag
+              <Plus size={18} /> Přidat jazyk / tag
             </button>
             <div className="modal-actions">
               <button
