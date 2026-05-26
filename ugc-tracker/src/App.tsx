@@ -66,6 +66,7 @@ function App() {
   const [collapsedVideos, setCollapsedVideos] = useState<string[]>([]);
   const [collapsedInvoices, setCollapsedInvoices] = useState<string[]>([]);
   const [collapsedPublished, setCollapsedPublished] = useState<string[]>([]);
+  const [invoiceLimits, setInvoiceLimits] = useState<Record<string, number>>({});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isConfigured, setIsConfigured] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -2022,110 +2023,151 @@ function App() {
 
                     {!collapsedInvoices.includes(creator) && (
                       <div className="invoices-content">
-                        {invoices.filter(
-                          (inv) =>
-                            inv.creator === creator && inv.app === currentApp,
-                        ).length === 0 ? (
-                          <p className="no-invoices">Žádné faktury.</p>
-                        ) : (
-                          <table className="invoices-table">
-                            <thead>
-                              <tr>
-                                <th>Datum</th>
-                                <th>Stav</th>
-                                <th style={{ width: "50px" }}></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {invoices
-                                .filter(
-                                  (inv) =>
-                                    inv.creator === creator &&
-                                    inv.app === currentApp,
-                                )
-                                .map((inv) => (
-                                  <tr key={inv.id}>
-                                    <td>
-                                      <div className="invoice-date-cell">
-                                        <Calendar
-                                          size={14}
-                                          className="field-icon"
-                                        />
-                                        <div
-                                          className="invoice-date-wrapper"
-                                          onClick={(e) => {
-                                            const input =
-                                              e.currentTarget.querySelector(
-                                                "input",
-                                              );
-                                            if (
-                                              input &&
-                                              "showPicker" in input
-                                            ) {
-                                              try {
-                                                (input as any).showPicker();
-                                              } catch (err) {
-                                                input.focus();
-                                              }
-                                            }
-                                          }}
-                                        >
-                                          <span className="invoice-date-display">
-                                            {formatDate(inv.date)}
-                                          </span>
-                                          <input
-                                            type="date"
-                                            className="invoice-date-input"
-                                            value={inv.date}
-                                            onChange={(e) =>
-                                              updateInvoice(
-                                                inv.id,
-                                                "date",
-                                                e.target.value,
-                                              )
-                                            }
-                                          />
-                                        </div>
-                                      </div>
-                                    </td>{" "}
-                                    <td>
-                                      <div
-                                        className="invoice-status-cycle"
-                                        onClick={() =>
-                                          toggleInvoiceStatus(inv.id)
-                                        }
-                                      >
-                                        {!inv.isReceived && !inv.isPaid && (
-                                          <span className="status-chip empty">
-                                            Žádný stav
-                                          </span>
-                                        )}
-                                        {inv.isReceived && !inv.isPaid && (
-                                          <span className="status-chip active received">
-                                            <Check size={12} /> Přijato
-                                          </span>
-                                        )}
-                                        {inv.isPaid && (
-                                          <span className="status-chip active paid">
-                                            <Check size={12} /> Zaplaceno
-                                          </span>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td className="col-actions">
-                                      <button
-                                        onClick={() => deleteInvoice(inv.id)}
-                                        className="delete-btn"
-                                        title="Smazat fakturu"
-                                      >
-                                        <Trash2 size={14} />
-                                      </button>
-                                    </td>
+                        {(() => {
+                          const creatorInvoices = invoices
+                            .filter(
+                              (inv) =>
+                                inv.creator === creator &&
+                                inv.app === currentApp,
+                            )
+                            .sort(
+                              (a, b) =>
+                                new Date(b.date).getTime() -
+                                new Date(a.date).getTime(),
+                            );
+
+                          if (creatorInvoices.length === 0) {
+                            return <p className="no-invoices">Žádné faktury.</p>;
+                          }
+
+                          const currentLimit = invoiceLimits[creator] || 5;
+                          const visibleInvoices = creatorInvoices.slice(0, currentLimit);
+
+                          return (
+                            <>
+                              <table className="invoices-table">
+                                <thead>
+                                  <tr>
+                                    <th>Datum</th>
+                                    <th>Stav</th>
+                                    <th style={{ width: "50px" }}></th>
                                   </tr>
-                                ))}
-                            </tbody>
-                          </table>
-                        )}
+                                </thead>
+                                <tbody>
+                                  {visibleInvoices.map((inv) => (
+                                    <tr key={inv.id}>
+                                      <td>
+                                        <div className="invoice-date-cell">
+                                          <Calendar
+                                            size={14}
+                                            className="field-icon"
+                                          />
+                                          <div
+                                            className="invoice-date-wrapper"
+                                            onClick={(e) => {
+                                              const input =
+                                                e.currentTarget.querySelector(
+                                                  "input",
+                                                );
+                                              if (
+                                                input &&
+                                                "showPicker" in input
+                                              ) {
+                                                try {
+                                                  (input as any).showPicker();
+                                                } catch (err) {
+                                                  input.focus();
+                                                }
+                                              }
+                                            }}
+                                          >
+                                            <span className="invoice-date-display">
+                                              {formatDate(inv.date)}
+                                            </span>
+                                            <input
+                                              type="date"
+                                              className="invoice-date-input"
+                                              value={inv.date}
+                                              onChange={(e) =>
+                                                updateInvoice(
+                                                  inv.id,
+                                                  "date",
+                                                  e.target.value,
+                                                )
+                                              }
+                                            />
+                                          </div>
+                                        </div>
+                                      </td>{" "}
+                                      <td>
+                                        <div
+                                          className="invoice-status-cycle"
+                                          onClick={() =>
+                                            toggleInvoiceStatus(inv.id)
+                                          }
+                                        >
+                                          {!inv.isReceived && !inv.isPaid && (
+                                            <span className="status-chip empty">
+                                              Žádný stav
+                                            </span>
+                                          )}
+                                          {inv.isReceived && !inv.isPaid && (
+                                            <span className="status-chip active received">
+                                              <Check size={12} /> Přijato
+                                            </span>
+                                          )}
+                                          {inv.isPaid && (
+                                            <span className="status-chip active paid">
+                                              <Check size={12} /> Zaplaceno
+                                            </span>
+                                          )}
+                                        </div>
+                                      </td>
+                                      <td className="col-actions">
+                                        <button
+                                          onClick={() => deleteInvoice(inv.id)}
+                                          className="delete-btn"
+                                          title="Smazat fakturu"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <div className="invoice-pagination-controls">
+                                {creatorInvoices.length > currentLimit && (
+                                  <button
+                                    className="show-more-invoices"
+                                    onClick={() =>
+                                      setInvoiceLimits((prev) => ({
+                                        ...prev,
+                                        [creator]: currentLimit + 5,
+                                      }))
+                                    }
+                                  >
+                                    Zobrazit dalších 5 (zbývá{" "}
+                                    {creatorInvoices.length - currentLimit})
+                                  </button>
+                                )}
+                                {currentLimit > 5 && (
+                                  <button
+                                    className="show-more-invoices secondary"
+                                    onClick={() =>
+                                      setInvoiceLimits((prev) => ({
+                                        ...prev,
+                                        [creator]: 5,
+                                      }))
+                                    }
+                                  >
+                                    Zobrazit méně
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
