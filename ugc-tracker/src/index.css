@@ -867,8 +867,9 @@ tr:hover {
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
-  min-height: 40px;
+  height: 38px; /* Fixed height to prevent row jumping */
   padding: 2px 0;
+  position: relative;
 }
 
 .table-editable-notes {
@@ -881,26 +882,29 @@ tr:hover {
   padding: 4px 6px;
   border-radius: 4px;
   resize: none;
-  height: 38px;
+  height: 34px; /* Matches container minus padding */
   line-height: 1.2;
-  overflow-y: auto;
   transition: all 0.2s ease;
-  scrollbar-width: thin;
+  scrollbar-width: medium;
 }
 
 .table-editable-notes:focus {
   background: var(--bg-input);
   border-color: var(--accent-color);
-  height: 120px;
-  width: 270px;
+  height: 140px;
+  width: 280px;
   position: absolute;
-  z-index: 2000; /* Above header (1100), bulk bar (1200), and all table items */
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  top: 0; /* Align with top of cell */
+  left: 0;
+  z-index: 2000;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
   padding: 10px;
   white-space: normal;
-  overflow-y: auto;
+  overflow-y: auto; /* Show scrollbar when focused */
   outline: none;
+  border-radius: 8px;
 }
+
 
 .delete-btn {
   background: transparent;
@@ -1284,33 +1288,98 @@ tr:hover {
 .custom-color-picker {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: fit-content;
 }
 
-.custom-color-picker input[type="color"] {
-  width: 40px;
-  height: 24px;
-  border: none;
-  border-radius: 4px;
+.light-mode .custom-color-picker {
+  background: white;
+  border-color: #e2e8f0;
+}
+
+.picker-pipette-wrapper {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  border-radius: 6px;
   cursor: pointer;
-  background: none;
-}
-
-.hex-input {
-  flex: 1;
-  font-family: monospace;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s ease;
   color: white;
 }
 
-.light-mode .hex-input {
-  background: white;
-  border-color: #cbd5e1;
-  color: #1e293b;
+.picker-pipette-wrapper:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
+
+.picker-pipette-wrapper input[type="color"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.hex-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: 32px;
+}
+
+.light-mode .hex-input-wrapper {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.hex-hash {
+  color: var(--text-muted);
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-right: 2px;
+}
+
+.hex-input {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 65px !important;
+  font-family: monospace !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  color: white !important;
+  text-transform: uppercase;
+}
+
+.light-mode .hex-input {
+  color: #1e293b !important;
+}
+
+.hex-input:focus {
+  outline: none;
+}
+
+/* Specific input widths to prevent table layout shifting */
+.lang-edit-field {
+  width: 120px !important;
+  font-size: 0.75rem !important;
+  padding: 2px 4px !important;
+}
+
+
 
 

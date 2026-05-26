@@ -16,6 +16,7 @@ import {
   Sun,
   Moon,
   Tag as TagIcon,
+  Pipette,
 } from "lucide-react";
 const STORAGE_KEY = "ugc_tracker_data";
 const THEME_KEY = "ugc_tracker_theme";
@@ -809,19 +810,30 @@ function App() {
                       ))}
                     </div>
                     <div className="custom-color-picker">
-                      <input
-                        type="color"
-                        value={color.startsWith("#") ? color : "#64748b"}
-                        onChange={(e) => updateTagColor(name, e.target.value)}
-                        title="Vlastní barva"
-                      />
-                      <input
-                        type="text"
-                        className="hex-input"
-                        value={color}
-                        onChange={(e) => updateTagColor(name, e.target.value)}
-                        placeholder="#HEX"
-                      />
+                      <div className="picker-pipette-wrapper">
+                        <Pipette size={14} className="pipette-icon" />
+                        <input
+                          type="color"
+                          value={color.startsWith("#") ? color : "#64748b"}
+                          onChange={(e) => updateTagColor(name, e.target.value)}
+                          title="Vybrat vlastní barvu"
+                        />
+                      </div>
+                      <div className="hex-input-wrapper">
+                        <span className="hex-hash">#</span>
+                        <input
+                          type="text"
+                          className="hex-input"
+                          value={color.replace("#", "")}
+                          onChange={(e) => {
+                            const val = e.target.value.trim();
+                            if (val.length <= 6) {
+                              updateTagColor(name, `#${val}`);
+                            }
+                          }}
+                          placeholder="HEX"
+                        />
+                      </div>
                     </div>
                   </div>
                   <button
@@ -1323,7 +1335,7 @@ function App() {
                                     editingField?.field === "language" ? (
                                       <input
                                         autoFocus
-                                        className="table-editable-field"
+                                        className="table-editable-field lang-edit-field"
                                         value={video.language}
                                         onBlur={() => setEditingField(null)}
                                         onKeyDown={(e) =>
@@ -1601,7 +1613,7 @@ function App() {
                                     editingField?.field === "language" ? (
                                       <input
                                         autoFocus
-                                        className="table-editable-field"
+                                        className="table-editable-field lang-edit-field"
                                         value={video.language}
                                         onBlur={() => setEditingField(null)}
                                         onKeyDown={(e) =>
