@@ -66,7 +66,9 @@ function App() {
   const [collapsedVideos, setCollapsedVideos] = useState<string[]>([]);
   const [collapsedInvoices, setCollapsedInvoices] = useState<string[]>([]);
   const [collapsedPublished, setCollapsedPublished] = useState<string[]>([]);
-  const [invoiceLimits, setInvoiceLimits] = useState<Record<string, number>>({});
+  const [invoiceLimits, setInvoiceLimits] = useState<Record<string, number>>(
+    {},
+  );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isConfigured, setIsConfigured] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -753,7 +755,7 @@ function App() {
           <div className="tag-group-label">K výběru:</div>
           <div className="tag-selector-grid">
             {availableTags.map((t) => {
-              const { className, style } = getTagStyle(t.name);
+              const { className } = getTagStyle(t.name);
               return (
                 <span
                   key={t.name}
@@ -1284,17 +1286,25 @@ function App() {
                 setNewVideo({ ...newVideo, videoUrl: e.target.value })
               }
             />
-            
+
             <div className="form-section">
               <label className="form-label">Jazyk</label>
-              {renderTagSelector(newVideo.language, (val) => setNewVideo({...newVideo, language: val}), "lang")}
+              {renderTagSelector(
+                newVideo.language,
+                (val) => setNewVideo({ ...newVideo, language: val }),
+                "lang",
+              )}
             </div>
 
             <div className="form-section">
               <label className="form-label">Tagy</label>
-              {renderTagSelector(newVideo.tags, (val) => setNewVideo({...newVideo, tags: val}), "other")}
+              {renderTagSelector(
+                newVideo.tags,
+                (val) => setNewVideo({ ...newVideo, tags: val }),
+                "other",
+              )}
             </div>
-            
+
             <textarea
               placeholder="Poznámky"
               value={newVideo.notes}
@@ -1632,7 +1642,10 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "language" ? (
-                                      <div className="inline-selector-wrapper" ref={selectorRef}>
+                                      <div
+                                        className="inline-selector-wrapper"
+                                        ref={selectorRef}
+                                      >
                                         {renderTagSelector(
                                           video.language,
                                           (val) =>
@@ -1687,7 +1700,10 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "tags" ? (
-                                      <div className="inline-selector-wrapper" ref={selectorRef}>
+                                      <div
+                                        className="inline-selector-wrapper"
+                                        ref={selectorRef}
+                                      >
                                         {renderTagSelector(
                                           video.tags,
                                           (val) =>
@@ -1928,7 +1944,10 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "language" ? (
-                                      <div className="inline-selector-wrapper" ref={selectorRef}>
+                                      <div
+                                        className="inline-selector-wrapper"
+                                        ref={selectorRef}
+                                      >
                                         {renderTagSelector(
                                           video.language,
                                           (val) =>
@@ -1983,7 +2002,10 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "tags" ? (
-                                      <div className="inline-selector-wrapper" ref={selectorRef}>
+                                      <div
+                                        className="inline-selector-wrapper"
+                                        ref={selectorRef}
+                                      >
                                         {renderTagSelector(
                                           video.tags,
                                           (val) =>
@@ -2130,11 +2152,16 @@ function App() {
                             );
 
                           if (creatorInvoices.length === 0) {
-                            return <p className="no-invoices">Žádné faktury.</p>;
+                            return (
+                              <p className="no-invoices">Žádné faktury.</p>
+                            );
                           }
 
                           const currentLimit = invoiceLimits[creator] || 5;
-                          const visibleInvoices = creatorInvoices.slice(0, currentLimit);
+                          const visibleInvoices = creatorInvoices.slice(
+                            0,
+                            currentLimit,
+                          );
 
                           return (
                             <>
