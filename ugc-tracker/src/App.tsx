@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Video, ProductionStatus, Invoice } from "./types";
 import {
   Plus,
@@ -72,13 +72,34 @@ function App() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [editingField, setEditingField] = useState<{
     id: string;
-    field: "tags" | "language";
+    field: "tags" | "language" | "notes";
   } | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     submessage?: string;
     id: number;
   } | null>(null);
+
+  const selectorRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close selector
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        selectorRef.current &&
+        !selectorRef.current.contains(event.target as Node)
+      ) {
+        setEditingField(null);
+      }
+    };
+
+    if (editingField) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [editingField]);
 
   const getTagStyle = (text: string) => {
     const t = text.toLowerCase().trim();
@@ -479,11 +500,40 @@ function App() {
             "Import dat nahradí všechna aktuální data. Chcete pokračovat?",
           )
         ) {
+          // Robust video migration
+          const migratedVideos = (imported.videos || []).map((v: any) => {
+            let finalStatus = v.status;
+            if (!v.status) {
+              finalStatus = "dubbing";
+              if (v.published) finalStatus = "published";
+              else if (v.subtitlesDone) finalStatus = "subtitles";
+            }
+
+            const {
+              dubbingDone,
+              subtitlesDone,
+              published,
+              invoiceStatus,
+              invoiceReceived,
+              invoicePaid,
+              ...rest
+            } = v;
+
+            let finalTags = v.tags;
+            if (Array.isArray(v.tags)) {
+              finalTags = v.tags.join(", ");
+            } else if (v.tags === undefined || v.tags === null) {
+              finalTags = "";
+            }
+
+            return { ...rest, status: finalStatus, tags: finalTags };
+          });
+
           setApps(imported.apps || []);
-          setVideos(imported.videos || []);
+          setVideos(migratedVideos);
           setInvoices(imported.invoices || []);
           setCreators(imported.creators || INITIAL_CREATORS);
-          setTagConfigs(imported.tagConfigs || DEFAULT_TAG_CONFIGS);
+          setTagConfigs(migrateTagConfigs(imported.tagConfigs));
           setCurrentApp(
             imported.currentApp || (imported.apps && imported.apps[0]) || "",
           );
@@ -491,6 +541,7 @@ function App() {
           setCollapsedVideos(imported.collapsedVideos || []);
           setCollapsedInvoices(imported.collapsedInvoices || []);
           setCollapsedPublished(imported.collapsedPublished || []);
+          setInvoiceLimits({}); // Reset limits on import
           setIsConfigured(true);
         }
       } catch (err) {
@@ -1581,7 +1632,7 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "language" ? (
-                                      <div className="inline-selector-wrapper">
+                                      <div className="inline-selector-wrapper" ref={selectorRef}>
                                         {renderTagSelector(
                                           video.language,
                                           (val) =>
@@ -1636,7 +1687,7 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "tags" ? (
-                                      <div className="inline-selector-wrapper">
+                                      <div className="inline-selector-wrapper" ref={selectorRef}>
                                         {renderTagSelector(
                                           video.tags,
                                           (val) =>
@@ -1691,14 +1742,35 @@ function App() {
                                   </td>
                                   <td className="col-notes">
                                     <div className="table-notes-container">
-                                      <textarea
-                                        className="table-editable-notes"
-                                        placeholder="..."
-                                        value={video.notes}
-                                        onChange={(e) =>
-                                          updateNotes(video.id, e.target.value)
-                                        }
-                                      />
+                                      {editingField?.id === video.id &&
+                                      editingField?.field === "notes" ? (
+                                        <textarea
+                                          autoFocus
+                                          className="table-editable-notes"
+                                          placeholder="..."
+                                          value={video.notes}
+                                          onBlur={() => setEditingField(null)}
+                                          onChange={(e) =>
+                                            updateNotes(
+                                              video.id,
+                                              e.target.value,
+                                            )
+                                          }
+                                        />
+                                      ) : (
+                                        <div
+                                          className="notes-preview"
+                                          onClick={() =>
+                                            setEditingField({
+                                              id: video.id,
+                                              field: "notes",
+                                            })
+                                          }
+                                          title={video.notes}
+                                        >
+                                          {video.notes || "..."}
+                                        </div>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="col-actions">
@@ -1856,7 +1928,7 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "language" ? (
-                                      <div className="inline-selector-wrapper">
+                                      <div className="inline-selector-wrapper" ref={selectorRef}>
                                         {renderTagSelector(
                                           video.language,
                                           (val) =>
@@ -1911,7 +1983,7 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "tags" ? (
-                                      <div className="inline-selector-wrapper">
+                                      <div className="inline-selector-wrapper" ref={selectorRef}>
                                         {renderTagSelector(
                                           video.tags,
                                           (val) =>
@@ -1966,14 +2038,35 @@ function App() {
                                   </td>
                                   <td className="col-notes">
                                     <div className="table-notes-container">
-                                      <textarea
-                                        className="table-editable-notes"
-                                        placeholder="..."
-                                        value={video.notes}
-                                        onChange={(e) =>
-                                          updateNotes(video.id, e.target.value)
-                                        }
-                                      />
+                                      {editingField?.id === video.id &&
+                                      editingField?.field === "notes" ? (
+                                        <textarea
+                                          autoFocus
+                                          className="table-editable-notes"
+                                          placeholder="..."
+                                          value={video.notes}
+                                          onBlur={() => setEditingField(null)}
+                                          onChange={(e) =>
+                                            updateNotes(
+                                              video.id,
+                                              e.target.value,
+                                            )
+                                          }
+                                        />
+                                      ) : (
+                                        <div
+                                          className="notes-preview"
+                                          onClick={() =>
+                                            setEditingField({
+                                              id: video.id,
+                                              field: "notes",
+                                            })
+                                          }
+                                          title={video.notes}
+                                        >
+                                          {video.notes || "..."}
+                                        </div>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="col-actions">

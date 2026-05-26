@@ -584,11 +584,18 @@ tr:hover {
   background: var(--table-hover);
 }
 
-.col-lang { min-width: 140px; }
-.col-tags { min-width: 200px; }
-.col-notes { min-width: 180px; position: relative; }
-.col-status { min-width: 220px; }
-.col-title { min-width: 180px; }
+.col-lang { width: 140px; min-width: 140px; }
+.col-tags { width: 200px; min-width: 200px; }
+.col-notes { width: 180px; min-width: 180px; position: relative; }
+.col-status { width: 220px; min-width: 220px; }
+.col-title { min-width: 250px; } /* Title can still be flexible */
+
+/* Ensure containers don't collapse when content is absolute */
+.chips-container, .table-notes-container {
+  min-height: 28px;
+  width: 100%;
+}
+
 
 /* New Chip Styles (Updated from Image Reference) */
 .chips-container {
@@ -874,38 +881,53 @@ tr:hover {
   position: relative;
 }
 
-.table-editable-notes {
-  width: 100%;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  font-family: inherit;
+.notes-preview {
   font-size: 0.75rem;
-  padding: 4px 6px;
-  border-radius: 4px;
-  resize: none;
-  height: 34px; /* Matches container minus padding */
+  color: var(--text-muted);
   line-height: 1.2;
-  transition: all 0.2s ease;
-  scrollbar-width: medium;
+  cursor: pointer;
+  padding: 4px 6px;
+  width: 100%;
+  box-sizing: border-box;
+  
+  /* Multiline Ellipsis Logic */
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  transition: background 0.2s;
+  border-radius: 4px;
 }
 
-.table-editable-notes:focus {
-  background: var(--bg-input);
-  border-color: var(--accent-color);
-  height: 140px;
+
+.notes-preview:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.table-editable-notes {
   width: 280px;
+  background: var(--bg-input);
+  border: 1px solid var(--accent-color);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 10px;
+  border-radius: 8px;
+  resize: none;
+  height: 140px;
+  line-height: 1.2;
   position: absolute;
-  top: 0; /* Align with top of cell */
+  top: 0;
   left: 0;
   z-index: 2000;
   box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-  padding: 10px;
-  white-space: normal;
-  overflow-y: auto; /* Show scrollbar when focused */
   outline: none;
-  border-radius: 8px;
+  overflow-y: auto;
 }
+
+
 
 
 .delete-btn {
@@ -1285,7 +1307,9 @@ tr:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  max-width: 300px; /* Prevent infinite horizontal stretching */
 }
+
 
 .selectable-chip {
   cursor: pointer;

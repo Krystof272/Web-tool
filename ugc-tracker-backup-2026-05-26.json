@@ -1,0 +1,165 @@
+{
+  "apps": [
+    "Barkio",
+    "Bibino",
+    "Camerito"
+  ],
+  "videos": [
+    {
+      "id": "1779792616122",
+      "title": "Párky",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/Přeložené/Publikované/Malvin Párky - en a tit.mov'",
+      "tags": "fun",
+      "notes": "Únor",
+      "status": "published",
+      "createdAt": 1779792616122
+    },
+    {
+      "id": "1779792544538",
+      "title": "Malvin Binec",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/Přeložené/Publikované/Malvin binec - en a tit animace.mp4'",
+      "tags": "fun",
+      "notes": "",
+      "status": "subtitles",
+      "createdAt": 1779792544538
+    },
+    {
+      "id": "1779792461921",
+      "title": "Malvin a dítě",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/Přeložené/Publikované/Malvin a dítě - en a tit.mov'",
+      "tags": "zima",
+      "notes": "",
+      "status": "published",
+      "createdAt": 1779792461921
+    },
+    {
+      "id": "1779792437589",
+      "title": "Šťastný pes",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/Přeložené/Malvin šťastný pes - en a tit.mov'",
+      "tags": "lifestyle",
+      "notes": "Je to celé strašně super, chceme další podobné video s edu obsahem.",
+      "status": "subtitles",
+      "createdAt": 1779792437589
+    },
+    {
+      "id": "1779700430695",
+      "title": "Na něco jsem zapomněla",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/KVĚTEN'",
+      "tags": "reklama",
+      "notes": "",
+      "status": "subtitles",
+      "createdAt": 1779700430695
+    },
+    {
+      "id": "1779700375595",
+      "title": "7 let - očekávání v reality",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/KVĚTEN'",
+      "tags": "fun",
+      "notes": "",
+      "status": "subtitles",
+      "createdAt": 1779700375595
+    },
+    {
+      "id": "1779700238377",
+      "title": "Dovolená",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/Přeložené/Malvin Dovolená - en a tit.mp4'",
+      "tags": "tip",
+      "notes": "",
+      "status": "published",
+      "createdAt": 1779700238377
+    },
+    {
+      "id": "1779699974691",
+      "title": "Malvin marod",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Volumes/TappyTaps Marketing/Apps/Barkio/videos/UGC/Bára Šprtová/Přeložené/Malvin - marod'",
+      "tags": "usecase",
+      "notes": "",
+      "status": "subtitles",
+      "createdAt": 1779699974691
+    },
+    {
+      "id": "1779699247474",
+      "title": "Aktivity se psem",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "language": "en",
+      "videoUrl": "'/Users/katerinabouzkova/Práce/Codex/Barkio/Videa - texty'",
+      "tags": "tip",
+      "notes": "",
+      "status": "subtitles",
+      "createdAt": 1779699247474
+    }
+  ],
+  "invoices": [
+    {
+      "id": "1779794089728",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "date": "2026-05-29",
+      "isReceived": true,
+      "isPaid": true
+    },
+    {
+      "id": "1779794077165",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "date": "2026-03-06",
+      "isReceived": true,
+      "isPaid": true
+    },
+    {
+      "id": "1779699805352",
+      "creator": "Bára Šprtová",
+      "app": "Barkio",
+      "date": "2026-05-11",
+      "isReceived": true,
+      "isPaid": true
+    }
+  ],
+  "creators": [
+    "Bára Šprtová",
+    "Bára Štrbáková",
+    "Alžběta Uhýrková"
+  ],
+  "tagConfigs": {
+    "recenze": "#10b981",
+    "cs": "#22c55e",
+    "titulky": "#8b5cf6",
+    "en": "#6366f1",
+    "zima": "#6366f1",
+    "fun": "#ec4899",
+    "lifestyle": "#eab308",
+    "edu": "#22c55e",
+    "tip": "#a855f7",
+    "usecase": "#ef4444"
+  },
+  "currentApp": "Barkio",
+  "collapsedCreators": [],
+  "collapsedVideos": [],
+  "collapsedInvoices": [],
+  "collapsedPublished": []
+}
