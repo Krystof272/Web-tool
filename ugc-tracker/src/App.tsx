@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Video, ProductionStatus, Invoice } from "./types";
+import type { Video, ProductionStatus, Invoice, TagConfig } from "./types";
 import {
   Plus,
   Circle,
@@ -15,18 +15,43 @@ import {
   Copy,
   Sun,
   Moon,
+  Tag as TagIcon,
 } from "lucide-react";
 const STORAGE_KEY = "ugc_tracker_data";
 const THEME_KEY = "ugc_tracker_theme";
 
 const INITIAL_CREATORS = ["krystof"];
 
-const getChipColorClass = (text: string) => {
-  const t = text.toLowerCase().trim();
-  if (t === "recenze" || t === "cz" || t === "cs") return "color-green";
-  if (t === "reels" || t.includes("titulky")) return "color-purple";
-  if (t === "feed" || t.includes("pub") || t === "en") return "color-blue";
-  return "color-default";
+const TAG_COLOR_PRESETS = [
+  "#64748b", // Gray
+  "#ef4444", // Red
+  "#f97316", // Orange
+  "#f59e0b", // Amber
+  "#eab308", // Yellow
+  "#84cc16", // Lime
+  "#22c55e", // Green
+  "#10b981", // Emerald
+  "#14b8a6", // Teal
+  "#06b6d4", // Cyan
+  "#0ea5e9", // Sky
+  "#3b82f6", // Blue
+  "#6366f1", // Indigo
+  "#8b5cf6", // Violet
+  "#a855f7", // Purple
+  "#d946ef", // Fuchsia
+  "#ec4899", // Pink
+  "#f43f5e", // Rose
+];
+
+const DEFAULT_TAG_CONFIGS: Record<string, string> = {
+  recenze: "#10b981",
+  cz: "#10b981",
+  cs: "#10b981",
+  reels: "#a855f7",
+  titulky: "#a855f7",
+  feed: "#3b82f6",
+  pub: "#3b82f6",
+  en: "#3b82f6",
 };
 
 function App() {
@@ -34,6 +59,8 @@ function App() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creators, setCreators] = useState<string[]>(INITIAL_CREATORS);
+  const [tagConfigs, setTagConfigs] =
+    useState<Record<string, string>>(DEFAULT_TAG_CONFIGS);
   const [currentApp, setCurrentApp] = useState<string>("");
   const [collapsedCreators, setCollapsedCreators] = useState<string[]>([]);
   const [collapsedVideos, setCollapsedVideos] = useState<string[]>([]);
@@ -46,6 +73,48 @@ function App() {
     id: string;
     field: "tags" | "language";
   } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    submessage?: string;
+    id: number;
+  } | null>(null);
+
+  const getTagStyle = (text: string) => {
+    const t = text.toLowerCase().trim();
+    let color = tagConfigs[t];
+
+    if (!color) {
+      for (const [tagName, c] of Object.entries(tagConfigs)) {
+        if (t.includes(tagName)) {
+          color = c;
+          break;
+        }
+      }
+    }
+
+    if (!color) return { className: "color-default" };
+
+    // If it's a legacy class name, return it
+    if (color.startsWith("color-")) return { className: color };
+
+    // It's a HEX color - generate dynamic theme-aware styles
+    return {
+      className: "custom-color",
+      style: {
+        "--tag-bg": theme === "light" ? `${color}15` : `${color}25`,
+        "--tag-text": color,
+        "--tag-border": `${color}40`,
+      } as React.CSSProperties,
+    };
+  };
+
+  const showToast = (message: string, submessage?: string) => {
+    const id = Date.now();
+    setToast({ message, submessage, id });
+    setTimeout(() => {
+      setToast((current) => (current?.id === id ? null : current));
+    }, 5000);
+  };
 
   // Apply theme class
   useEffect(() => {
@@ -68,6 +137,7 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCreatorManager, setShowCreatorManager] = useState(false);
   const [showAppManager, setShowAppManager] = useState(false);
+  const [showTagManager, setShowTagManager] = useState(false);
   const [newVideo, setNewVideo] = useState({
     title: "",
     creator: INITIAL_CREATORS[0],
@@ -85,17 +155,19 @@ function App() {
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
+      const parsed = JSON.parse(saved);
       const {
         apps,
         videos,
         invoices: savedInvoices,
         creators,
+        tagConfigs: savedTagConfigs,
         currentApp,
         collapsedCreators,
         collapsedVideos: savedCollapsedVideos,
         collapsedInvoices: savedCollapsedInvoices,
         collapsedPublished: savedCollapsedPublished,
-      } = JSON.parse(saved);
+      } = parsed;
 
       // Migrate back to single status if needed, remove invoice data
       const migratedVideos = (videos || []).map((v: any) => {
@@ -131,6 +203,7 @@ function App() {
       setVideos(migratedVideos);
       setInvoices(savedInvoices || []);
       setCreators(creators || INITIAL_CREATORS);
+      setTagConfigs(savedTagConfigs || DEFAULT_TAG_CONFIGS);
       setCurrentApp(currentApp || (apps && apps[0]) || "");
       setCollapsedCreators(collapsedCreators || []);
       setCollapsedVideos(savedCollapsedVideos || []);
@@ -150,6 +223,7 @@ function App() {
           videos,
           invoices,
           creators,
+          tagConfigs,
           currentApp,
           collapsedCreators,
           collapsedVideos,
@@ -163,6 +237,7 @@ function App() {
     videos,
     invoices,
     creators,
+    tagConfigs,
     currentApp,
     collapsedCreators,
     collapsedVideos,
@@ -346,6 +421,7 @@ function App() {
         videos,
         invoices,
         creators,
+        tagConfigs,
         currentApp,
         collapsedCreators,
         collapsedVideos,
@@ -387,6 +463,7 @@ function App() {
           setVideos(imported.videos || []);
           setInvoices(imported.invoices || []);
           setCreators(imported.creators || INITIAL_CREATORS);
+          setTagConfigs(imported.tagConfigs || DEFAULT_TAG_CONFIGS);
           setCurrentApp(
             imported.currentApp || (imported.apps && imported.apps[0]) || "",
           );
@@ -549,6 +626,27 @@ function App() {
     setShowAddForm(true);
   };
 
+  const addTagConfig = (name: string) => {
+    if (!name || tagConfigs[name.toLowerCase().trim()]) return;
+    setTagConfigs({
+      ...tagConfigs,
+      [name.toLowerCase().trim()]: "color-default",
+    });
+  };
+
+  const updateTagColor = (name: string, colorClass: string) => {
+    setTagConfigs({
+      ...tagConfigs,
+      [name]: colorClass,
+    });
+  };
+
+  const deleteTagConfig = (name: string) => {
+    const newConfigs = { ...tagConfigs };
+    delete newConfigs[name];
+    setTagConfigs(newConfigs);
+  };
+
   if (!isConfigured) {
     return (
       <div className="setup-container">
@@ -649,6 +747,12 @@ function App() {
               >
                 Tvůrce
               </button>
+              <button
+                className="add-btn secondary"
+                onClick={() => setShowTagManager(true)}
+              >
+                Jazyky / Tagy
+              </button>
               <button className="add-btn" onClick={handleOpenAddForm}>
                 <Plus size={20} /> Nové Video
               </button>
@@ -669,6 +773,82 @@ function App() {
           </div>
         </div>
       </header>
+
+      {showTagManager && (
+        <div className="modal">
+          <div className="modal-content tag-manager-modal">
+            <h2>Správa barev tagů</h2>
+            <div className="tag-configs-list">
+              {Object.entries(tagConfigs).map(([name, color]) => (
+                <div key={name} className="tag-manage-item">
+                  <div className="tag-preview">
+                    {(() => {
+                      const { className, style } = getTagStyle(name);
+                      return (
+                        <span className={`chip ${className}`} style={style}>
+                          {name}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <div className="tag-color-controls">
+                    <div className="color-presets-grid">
+                      {TAG_COLOR_PRESETS.map((preset) => (
+                        <div
+                          key={preset}
+                          className={`color-preset ${color === preset ? "active" : ""}`}
+                          style={{ backgroundColor: preset }}
+                          onClick={() => updateTagColor(name, preset)}
+                          title={preset}
+                        />
+                      ))}
+                    </div>
+                    <div className="custom-color-picker">
+                      <input
+                        type="color"
+                        value={color.startsWith("#") ? color : "#64748b"}
+                        onChange={(e) => updateTagColor(name, e.target.value)}
+                        title="Vlastní barva"
+                      />
+                      <input
+                        type="text"
+                        className="hex-input"
+                        value={color}
+                        onChange={(e) => updateTagColor(name, e.target.value)}
+                        placeholder="#HEX"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteTagConfig(name)}
+                    className="delete-btn"
+                    title="Smazat konfiguraci tagu"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              className="add-btn"
+              onClick={() => {
+                const name = window.prompt("Název nového tagu:");
+                if (name) addTagConfig(name);
+              }}
+            >
+              <Plus size={18} /> Přidat Tag
+            </button>
+            <div className="modal-actions">
+              <button
+                className="cancel"
+                onClick={() => setShowTagManager(false)}
+              >
+                Zavřít
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCreatorManager && (
         <div className="modal">
@@ -1069,6 +1249,10 @@ function App() {
                                                 navigator.clipboard.writeText(
                                                   video.videoUrl,
                                                 );
+                                                showToast(
+                                                  "Cesta zkopírována! 🚀",
+                                                  "Cmd+Shift+G ve Finderu",
+                                                );
                                               }
                                             }}
                                           >
@@ -1152,17 +1336,23 @@ function App() {
                                     ) : (
                                       <div className="chips-container">
                                         <Globe size={12} className="url-icon" />
-                                        {(video.language || "").split(",").map(
-                                          (l, i) =>
-                                            l.trim() && (
+                                        {(video.language || "")
+                                          .split(",")
+                                          .map((l, i) => {
+                                            const tag = l.trim();
+                                            if (!tag) return null;
+                                            const { className, style } =
+                                              getTagStyle(tag);
+                                            return (
                                               <span
                                                 key={i}
-                                                className={`chip lang-chip ${getChipColorClass(l.trim())}`}
+                                                className={`chip lang-chip ${className}`}
+                                                style={style}
                                               >
-                                                {l.trim()}
+                                                {tag}
                                               </span>
-                                            ),
-                                        )}
+                                            );
+                                          })}
                                         {!(video.language || "").trim() && (
                                           <span
                                             style={{
@@ -1207,17 +1397,23 @@ function App() {
                                       />
                                     ) : (
                                       <div className="chips-container">
-                                        {(video.tags || "").split(",").map(
-                                          (t, i) =>
-                                            t.trim() && (
+                                        {(video.tags || "")
+                                          .split(",")
+                                          .map((t, i) => {
+                                            const tag = t.trim();
+                                            if (!tag) return null;
+                                            const { className, style } =
+                                              getTagStyle(tag);
+                                            return (
                                               <span
                                                 key={i}
-                                                className={`chip tag-chip ${getChipColorClass(t.trim())}`}
+                                                className={`chip tag-chip ${className}`}
+                                                style={style}
                                               >
-                                                {t.trim()}
+                                                {tag}
                                               </span>
-                                            ),
-                                        )}
+                                            );
+                                          })}
                                         {!(video.tags || "").trim() && (
                                           <span
                                             style={{
@@ -1362,6 +1558,10 @@ function App() {
                                                 navigator.clipboard.writeText(
                                                   video.videoUrl,
                                                 );
+                                                showToast(
+                                                  "Cesta zkopírována! 🚀",
+                                                  "Cmd+Shift+G ve Finderu",
+                                                );
                                               }
                                             }}
                                           >
@@ -1414,17 +1614,23 @@ function App() {
                                     ) : (
                                       <div className="chips-container">
                                         <Globe size={12} className="url-icon" />
-                                        {(video.language || "").split(",").map(
-                                          (l, i) =>
-                                            l.trim() && (
+                                        {(video.language || "")
+                                          .split(",")
+                                          .map((l, i) => {
+                                            const tag = l.trim();
+                                            if (!tag) return null;
+                                            const { className, style } =
+                                              getTagStyle(tag);
+                                            return (
                                               <span
                                                 key={i}
-                                                className={`chip lang-chip ${getChipColorClass(l.trim())}`}
+                                                className={`chip lang-chip ${className}`}
+                                                style={style}
                                               >
-                                                {l.trim()}
+                                                {tag}
                                               </span>
-                                            ),
-                                        )}
+                                            );
+                                          })}
                                         {!(video.language || "").trim() && (
                                           <span
                                             style={{
@@ -1469,17 +1675,23 @@ function App() {
                                       />
                                     ) : (
                                       <div className="chips-container">
-                                        {(video.tags || "").split(",").map(
-                                          (t, i) =>
-                                            t.trim() && (
+                                        {(video.tags || "")
+                                          .split(",")
+                                          .map((t, i) => {
+                                            const tag = t.trim();
+                                            if (!tag) return null;
+                                            const { className, style } =
+                                              getTagStyle(tag);
+                                            return (
                                               <span
                                                 key={i}
-                                                className={`chip tag-chip ${getChipColorClass(t.trim())}`}
+                                                className={`chip tag-chip ${className}`}
+                                                style={style}
                                               >
-                                                {t.trim()}
+                                                {tag}
                                               </span>
-                                            ),
-                                        )}
+                                            );
+                                          })}
                                         {!(video.tags || "").trim() && (
                                           <span
                                             style={{
@@ -1670,6 +1882,17 @@ function App() {
           </div>
         )}
       </main>
+
+      {toast && (
+        <div className="toast-container">
+          <div className="toast">
+            <div className="toast-message">{toast.message}</div>
+            {toast.submessage && (
+              <div className="toast-submessage">{toast.submessage}</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

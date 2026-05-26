@@ -627,13 +627,32 @@ tr:hover {
 .light-mode .chip.color-green { background: #dcfce7; color: #166534; }
 .light-mode .chip.color-purple { background: #f3e8ff; color: #581c87; }
 .light-mode .chip.color-blue { background: #dbeafe; color: #1e40af; }
+.light-mode .chip.color-orange { background: #ffedd5; color: #9a3412; }
+.light-mode .chip.color-red { background: #fee2e2; color: #991b1b; }
+.light-mode .chip.color-pink { background: #fce7f3; color: #9d174d; }
+.light-mode .chip.color-yellow { background: #fef9c3; color: #854d0e; }
+.light-mode .chip.color-cyan { background: #cffafe; color: #155e75; }
+.light-mode .chip.color-indigo { background: #e0e7ff; color: #3730a3; }
 .light-mode .chip.color-default { background: #f1f5f9; color: #475569; }
 
-/* Dark Mode Variants (Adjusted for Dark BG) */
+/* Dark Mode Variants */
 .chip.color-green { background: rgba(22, 101, 52, 0.3); color: #86efac; }
 .chip.color-purple { background: rgba(88, 28, 135, 0.3); color: #d8b4fe; }
 .chip.color-blue { background: rgba(30, 64, 175, 0.3); color: #93c5fd; }
+.chip.color-orange { background: rgba(154, 52, 18, 0.3); color: #fdba74; }
+.chip.color-red { background: rgba(153, 27, 27, 0.3); color: #fca5a5; }
+.chip.color-pink { background: rgba(157, 23, 77, 0.3); color: #f9a8d4; }
+.chip.color-yellow { background: rgba(133, 77, 14, 0.3); color: #fde047; }
+.chip.color-cyan { background: rgba(21, 94, 117, 0.3); color: #67e8f9; }
+.chip.color-indigo { background: rgba(55, 48, 163, 0.3); color: #a5b4fc; }
 .chip.color-default { background: rgba(71, 85, 105, 0.3); color: #cbd5e1; }
+
+/* Custom Dynamic Chip */
+.chip.custom-color {
+  background-color: var(--tag-bg);
+  color: var(--tag-text);
+  border: 1px solid var(--tag-border);
+}
 
 /* Type mapping */
 .chip.lang-chip { font-style: italic; }
@@ -872,12 +891,11 @@ tr:hover {
 .table-editable-notes:focus {
   background: var(--bg-input);
   border-color: var(--accent-color);
-  height: 250px;
-  width: 450px;
+  height: 120px;
+  width: 270px;
   position: absolute;
   z-index: 2000; /* Above header (1100), bulk bar (1200), and all table items */
   box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-  margin-left: -350px; /* Expand to the left to stay on screen */
   padding: 10px;
   white-space: normal;
   overflow-y: auto;
@@ -1142,3 +1160,157 @@ tr:hover {
   border-color: #10b981;
   color: #10b981;
 }
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  background: #333;
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  animation: toastSlideIn 0.3s ease-out;
+  border-left: 4px solid var(--accent-color);
+  min-width: 100px;
+}
+
+.light-mode .toast {
+  background: white;
+  color: #213547;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-left-color: #646cff;
+}
+
+.toast-message {
+  font-weight: 700;
+  margin-bottom: 0.1rem;
+  font-size: 0.85rem;
+}
+
+.toast-submessage {
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
+.light-mode .toast-submessage {
+  color: #666;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Tag Manager Modal */
+.tag-manager-modal {
+  max-width: 600px;
+  width: 90%;
+}
+
+.tag-configs-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+  padding-right: 0.5rem;
+}
+
+.tag-manage-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.light-mode .tag-manage-item {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.tag-preview {
+  min-width: 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.tag-color-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.color-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
+}
+
+.color-preset {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.color-preset:hover {
+  transform: scale(1.1);
+}
+
+.color-preset.active {
+  border-color: white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+
+.custom-color-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.custom-color-picker input[type="color"] {
+  width: 40px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+}
+
+.hex-input {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+}
+
+.light-mode .hex-input {
+  background: white;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+

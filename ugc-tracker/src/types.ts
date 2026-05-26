@@ -26,3 +26,8 @@ export interface AppConfig {
   selectedApps: string[];
   creators: string[];
 }
+
+export interface TagConfig {
+  name: string;
+  color: string;
+}
