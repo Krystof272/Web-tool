@@ -15,11 +15,10 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 - **Hromadné akce:** Podpora multi-výběru videí (checkboxy) s plovoucí lištou pro hromadnou změnu stavu nebo smazání.
 - **Sbalitelné sekce:** Možnost sbalit sekci tvůrce s rychlým souhrnem progresu (zobrazuje reálný stav i při aktivních filtrech). Vždy viditelní tvůrci i bez videí.
 - **Správa Tvůrců, Aplikací a Tagů:** Centrální okna pro správu seznamu tvůrců, aplikací (s migrací dat) a pokročilé barvení tagů.
-- **Chytré barvení tagů:** Možnost přiřadit libovolnou HEX barvu tagům a jazykům. Logika používá inteligentní shodu celých slov (word boundaries), aby se předešlo chybným shodu (např. jazyk "en" už neovlivňuje slovo "recenze").
-- **Poznámky:** Pole pro poznámky se po kliknutí rozbalí do prostorného editoru pro pohodlnou úpravu dlouhých textů.
-- **Video Odkazy a Cesty:** Cesty k souborům (lokální i cloudové) lze editovat přímo v řádku tabulky. Pole pro cestu je ultra-kompaktní a nachází se vedle názvu videa; při kliknutí (focus) se plynule roztáhne pro pohodlnou editaci. Tlačítko "Kopírovat" umožňuje rychlé zkopírování cesty pro bleskové otevření ve Finderu/Exploreru.
-- **Tmavý režim:** Aplikace je optimalizována pro tmavý režim pro pohodlnou práci v produkčním prostředí.
-- **Kompaktní UI:** Celé rozhraní bylo miniaturizováno (zmenšení textů a odsazení), aby se na obrazovku vešlo maximální množství informací bez nutnosti scrollování.
+- **Chytré barvení tagů:** Možnost přiřadit libovolnou HEX barvu tagům a jazykům pomocí profesionálního "Studio" color pickeru s pipetou a 18 presety. Logika používá inteligentní shodu celých slov (word boundaries), aby se předešlo chybným shodu (např. jazyk "en" už neovlivňuje slovo "recenze").
+- **Rozbalovací správa:** Výběr barev v Tag Manageru je defaultně skrytý a rozbalí se až po kliknutí na konkrétní tag, což zajišťuje maximální přehlednost.
+- **Poznámky:** Pole pro poznámky se po kliknutí rozbalí do prostorného editoru, který se vznáší nad tabulkou (absolute positioning) a nezpůsobuje posouvání okolních řádků.
+- **Video Odkazy a Cesty:** Cesty k souborům lze editovat přímo v řádku. Po zkopírování cesty (tlačítko "Kopírovat") se zobrazí oznámení (toast) s klávesovými zkratkami pro bleskové otevření ve Finderu (Cmd+Shift+G) nebo Průzkumníku (Ctrl+L).
 
 ## Instalace a Spuštění
 
@@ -47,6 +46,7 @@ V kořenovém adresáři se nachází pomocné skripty. Stačí na ně dvakrát 
 ## Vývojové Konvence
 
 - **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví. Horizontální layout pro název a cestu videa.
+- **Stabilitu UI:** Fixní výšky kontejnerů pro poznámky a fixní šířky editačních polí jazyků, aby se zabránilo poskakování tabulky při interakci.
 - **Stav:** Aplikace využívá React `useState` a `useEffect` pro synchronizaci komplexního stavu s `localStorage`.
 - **Typy:** TypeScript rozhraní jsou v `src/types.ts`.
 
@@ -54,10 +54,10 @@ V kořenovém adresáři se nachází pomocné skripty. Stačí na ně dvakrát 
 
 - `src/App.tsx`: Hlavní logika aplikace, UI komponenty a správa stavu.
 - `src/types.ts`: Definice datových struktur.
-- `src/index.css`: Globální styly (včetně ultra-kompaktního layoutu).
+- `src/index.css`: Globální styly (včetně ultra-kompaktního layoutu a animovaných toastů).
 - `sample_data.json`: Ukázková data s 5 autory a 50 videi pro testování.
 - `Spustit_Tracker.bat` / `Spustit_Mac.command`: Pomocné spouštěcí skripty.
 
 ## Stav Projektu
 
-- **Květen 2026 (Aktualizace):** Dokončena optimalizace hustoty informací. Přidán Light Mode, neomezená správa aplikací a hromadné akce. UI zpřehledněno horizontálním spojením názvu videa a cesty, plynulým rozbalováním polí při focusu a výrazným zmenšením fontů pro zobrazení více řádků současně. Projekt úspěšně prochází build procesem (`npm run build`).
+- **Květen 2026 (Aktualizace):** Dokončena optimalizace hustoty informací. Přidán Light Mode, neomezená správa aplikací a hromadné akce. Implementován pokročilý Tag Manager s HEX pickerem, chytrým vyhledáváním slov a stabilizovaným UI, které eliminuje layout shifty při editaci poznámek a jazyků. Projekt úspěšně prochází build procesem (`npm run build`).
