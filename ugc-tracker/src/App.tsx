@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Video, ProductionStatus, Invoice, TagConfig } from "./types";
+import type { Video, ProductionStatus, Invoice } from "./types";
 import {
   Plus,
   Circle,
@@ -15,7 +15,6 @@ import {
   Copy,
   Sun,
   Moon,
-  Tag as TagIcon,
   Pipette,
 } from "lucide-react";
 const STORAGE_KEY = "ugc_tracker_data";
