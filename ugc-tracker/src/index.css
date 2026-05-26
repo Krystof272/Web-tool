@@ -1219,12 +1219,96 @@ tr:hover {
   }
 }
 
-/* Tag Manager Modal */
-.tag-manager-modal {
-  max-width: 600px;
-  width: 90%;
-  padding: 1rem 1.5rem !important; /* Even tighter modal padding */
+/* Tag Selector Grid */
+.tag-selector-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid var(--border-input);
+  margin-top: 4px;
 }
+
+.light-mode .tag-selector-grid {
+  background: #f1f5f9;
+}
+
+.selectable-chip {
+  cursor: pointer;
+  opacity: 0.4;
+  filter: grayscale(0.8);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.selectable-chip:hover {
+  opacity: 0.8;
+  filter: grayscale(0.3);
+  transform: translateY(-1px);
+}
+
+.selectable-chip.active {
+  opacity: 1;
+  filter: grayscale(0);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.form-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-left: 2px;
+}
+
+.no-tags-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 4px;
+}
+
+.inline-selector-wrapper {
+  background: var(--bg-modal);
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  position: absolute;
+  z-index: 2100;
+  min-width: 280px;
+  border: 1px solid var(--accent-color);
+  margin-top: -10px;
+  margin-left: -10px;
+}
+
+.close-selector-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.close-selector-btn:hover {
+  filter: brightness(1.1);
+}
+
 
 .tag-manager-modal h2 {
   margin-bottom: 0rem; /* Zero margin after main title */

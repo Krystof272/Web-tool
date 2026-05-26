@@ -632,6 +632,59 @@ function App() {
     return `${day}.${month}.${year}`;
   };
 
+  const toggleTagInString = (currentStr: string, tag: string) => {
+    const tags = currentStr
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+    const index = tags.findIndex((t) => t.toLowerCase() === tag.toLowerCase());
+
+    if (index > -1) {
+      tags.splice(index, 1);
+    } else {
+      tags.push(tag);
+    }
+    return tags.join(", ");
+  };
+
+  const renderTagSelector = (
+    currentValue: string,
+    onToggle: (newValue: string) => void,
+    filterType: "lang" | "other",
+  ) => {
+    const languages = ["cz", "cs", "en", "sk", "de", "fr", "es", "it", "pl"];
+    const availableTags = tagConfigs.filter((c) => {
+      const isLang = languages.includes(c.name.toLowerCase().trim());
+      return filterType === "lang" ? isLang : !isLang;
+    });
+
+    const activeTags = currentValue
+      .split(",")
+      .map((t) => t.trim().toLowerCase());
+
+    return (
+      <div className="tag-selector-grid">
+        {availableTags.map((t) => {
+          const isActive = activeTags.includes(t.name.toLowerCase());
+          const { className, style } = getTagStyle(t.name);
+          return (
+            <span
+              key={t.name}
+              className={`chip selectable-chip ${className} ${isActive ? "active" : ""}`}
+              style={isActive ? style : {}}
+              onClick={() => onToggle(toggleTagInString(currentValue, t.name))}
+            >
+              {t.name}
+            </span>
+          );
+        })}
+        {availableTags.length === 0 && (
+          <p className="no-tags-hint">Žádné tagy v nastavení.</p>
+        )}
+      </div>
+    );
+  };
+
   const handleOpenAddForm = () => {
     setNewVideo({
       title: "",
@@ -1136,22 +1189,17 @@ function App() {
                 setNewVideo({ ...newVideo, videoUrl: e.target.value })
               }
             />
-            <input
-              type="text"
-              placeholder="Jazyk (např. CZ -> EN)"
-              value={newVideo.language}
-              onChange={(e) =>
-                setNewVideo({ ...newVideo, language: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Tagy (oddělené čárkou)"
-              value={newVideo.tags}
-              onChange={(e) =>
-                setNewVideo({ ...newVideo, tags: e.target.value })
-              }
-            />
+            
+            <div className="form-section">
+              <label className="form-label">Jazyk</label>
+              {renderTagSelector(newVideo.language, (val) => setNewVideo({...newVideo, language: val}), "lang")}
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">Tagy</label>
+              {renderTagSelector(newVideo.tags, (val) => setNewVideo({...newVideo, tags: val}), "other")}
+            </div>
+            
             <textarea
               placeholder="Poznámky"
               value={newVideo.notes}
@@ -1489,23 +1537,27 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "language" ? (
-                                      <input
-                                        autoFocus
-                                        className="table-editable-field lang-edit-field"
-                                        value={video.language}
-                                        onBlur={() => setEditingField(null)}
-                                        onKeyDown={(e) =>
-                                          e.key === "Enter" &&
-                                          setEditingField(null)
-                                        }
-                                        onChange={(e) =>
-                                          updateVideoField(
-                                            video.id,
-                                            "language",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
+                                      <div className="inline-selector-wrapper">
+                                        {renderTagSelector(
+                                          video.language,
+                                          (val) =>
+                                            updateVideoField(
+                                              video.id,
+                                              "language",
+                                              val,
+                                            ),
+                                          "lang",
+                                        )}
+                                        <button
+                                          className="close-selector-btn"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingField(null);
+                                          }}
+                                        >
+                                          Hotovo
+                                        </button>
+                                      </div>
                                     ) : (
                                       <div className="chips-container">
                                         <Globe size={12} className="url-icon" />
@@ -1540,24 +1592,27 @@ function App() {
                                   >
                                     {editingField?.id === video.id &&
                                     editingField?.field === "tags" ? (
-                                      <input
-                                        autoFocus
-                                        className="table-editable-field"
-                                        placeholder="Tagy..."
-                                        value={video.tags}
-                                        onBlur={() => setEditingField(null)}
-                                        onKeyDown={(e) =>
-                                          e.key === "Enter" &&
-                                          setEditingField(null)
-                                        }
-                                        onChange={(e) =>
-                                          updateVideoField(
-                                            video.id,
-                                            "tags",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
+                                      <div className="inline-selector-wrapper">
+                                        {renderTagSelector(
+                                          video.tags,
+                                          (val) =>
+                                            updateVideoField(
+                                              video.id,
+                                              "tags",
+                                              val,
+                                            ),
+                                          "other",
+                                        )}
+                                        <button
+                                          className="close-selector-btn"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingField(null);
+                                          }}
+                                        >
+                                          Hotovo
+                                        </button>
+                                      </div>
                                     ) : (
                                       <div className="chips-container">
                                         {(video.tags || "")
