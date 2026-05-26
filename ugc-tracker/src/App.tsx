@@ -43,16 +43,16 @@ const TAG_COLOR_PRESETS = [
   "#f43f5e", // Rose
 ];
 
-const DEFAULT_TAG_CONFIGS: Record<string, string> = {
-  recenze: "#10b981",
-  cz: "#22c55e",
-  cs: "#22c55e",
-  reels: "#a855f7",
-  titulky: "#8b5cf6",
-  feed: "#0ea5e9",
-  pub: "#3b82f6",
-  en: "#6366f1",
-};
+const DEFAULT_TAG_CONFIGS: { name: string; color: string }[] = [
+  { name: "recenze", color: "#10b981" },
+  { name: "cz", color: "#22c55e" },
+  { name: "cs", color: "#22c55e" },
+  { name: "reels", color: "#a855f7" },
+  { name: "titulky", color: "#8b5cf6" },
+  { name: "feed", color: "#0ea5e9" },
+  { name: "pub", color: "#3b82f6" },
+  { name: "en", color: "#6366f1" },
+];
 
 function App() {
   const [apps, setApps] = useState<string[]>([]);
@@ -60,7 +60,7 @@ function App() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creators, setCreators] = useState<string[]>(INITIAL_CREATORS);
   const [tagConfigs, setTagConfigs] =
-    useState<Record<string, string>>(DEFAULT_TAG_CONFIGS);
+    useState<{ name: string; color: string }[]>(DEFAULT_TAG_CONFIGS);
   const [currentApp, setCurrentApp] = useState<string>("");
   const [collapsedCreators, setCollapsedCreators] = useState<string[]>([]);
   const [collapsedVideos, setCollapsedVideos] = useState<string[]>([]);
@@ -83,15 +83,16 @@ function App() {
     const t = text.toLowerCase().trim();
 
     // 1. Exact match (highest priority)
-    let color = tagConfigs[t];
+    let colorConfig = tagConfigs.find((c) => c.name.toLowerCase() === t);
+    let color = colorConfig?.color;
 
     // 2. Smart partial match (word boundaries)
     if (!color) {
-      for (const [tagName, c] of Object.entries(tagConfigs)) {
+      for (const config of tagConfigs) {
         // Only match as a whole word or significant part to avoid "en" matching "recenze"
-        const regex = new RegExp(`\\b${tagName}\\b`, "i");
+        const regex = new RegExp(`\\b${config.name}\\b`, "i");
         if (regex.test(t)) {
-          color = c;
+          color = config.color;
           break;
         }
       }
@@ -144,6 +145,8 @@ function App() {
   const [showAppManager, setShowAppManager] = useState(false);
   const [showTagManager, setShowTagManager] = useState(false);
   const [expandedTag, setExpandedTag] = useState<string | null>(null);
+  const [editingTagName, setEditingTagName] = useState<string | null>(null);
+  const [editingTagValue, setEditingTagValue] = useState("");
   const [newVideo, setNewVideo] = useState({
     title: "",
     creator: INITIAL_CREATORS[0],
@@ -153,6 +156,15 @@ function App() {
     tags: "",
     notes: "",
   });
+
+  const migrateTagConfigs = (saved: any) => {
+    if (!saved) return DEFAULT_TAG_CONFIGS;
+    if (Array.isArray(saved)) return saved;
+    return Object.entries(saved).map(([name, color]) => ({
+      name,
+      color: color as string,
+    }));
+  };
 
   // Load data
   useEffect(() => {
@@ -209,8 +221,9 @@ function App() {
       setVideos(migratedVideos);
       setInvoices(savedInvoices || []);
       setCreators(creators || INITIAL_CREATORS);
-      setTagConfigs(savedTagConfigs || DEFAULT_TAG_CONFIGS);
+      setTagConfigs(migrateTagConfigs(savedTagConfigs));
       setCurrentApp(currentApp || (apps && apps[0]) || "");
+
       setCollapsedCreators(collapsedCreators || []);
       setCollapsedVideos(savedCollapsedVideos || []);
       setCollapsedInvoices(savedCollapsedInvoices || []);
@@ -633,24 +646,58 @@ function App() {
   };
 
   const addTagConfig = (name: string) => {
-    if (!name || tagConfigs[name.toLowerCase().trim()]) return;
-    setTagConfigs({
-      ...tagConfigs,
-      [name.toLowerCase().trim()]: "color-default",
-    });
+    const cleanName = name.toLowerCase().trim();
+    if (
+      !cleanName ||
+      tagConfigs.some((c) => c.name.toLowerCase() === cleanName)
+    )
+      return;
+    setTagConfigs([...tagConfigs, { name: cleanName, color: "color-default" }]);
   };
 
   const updateTagColor = (name: string, colorClass: string) => {
-    setTagConfigs({
-      ...tagConfigs,
-      [name]: colorClass,
-    });
+    setTagConfigs(
+      tagConfigs.map((c) =>
+        c.name === name ? { ...c, color: colorClass } : c,
+      ),
+    );
+  };
+
+  const updateTagName = (oldName: string, newName: string) => {
+    if (!newName || oldName === newName) return;
+    const oldKey = oldName.toLowerCase().trim();
+    const newKey = newName.toLowerCase().trim();
+
+    if (tagConfigs.some((c) => c.name.toLowerCase() === newKey)) return;
+
+    // 1. Update Configs Array (PRESERVES INDEX/ORDER)
+    setTagConfigs(
+      tagConfigs.map((c) => (c.name === oldName ? { ...c, name: newName } : c)),
+    );
+
+    // 2. Update Videos
+    setVideos(
+      videos.map((v) => {
+        const migrate = (str: string) =>
+          (str || "")
+            .split(",")
+            .map((p) =>
+              p.trim().toLowerCase() === oldKey ? newName.trim() : p.trim(),
+            )
+            .join(", ");
+        return {
+          ...v,
+          tags: migrate(v.tags),
+          language: migrate(v.language),
+        };
+      }),
+    );
+
+    if (expandedTag === oldName) setExpandedTag(newName);
   };
 
   const deleteTagConfig = (name: string) => {
-    const newConfigs = { ...tagConfigs };
-    delete newConfigs[name];
-    setTagConfigs(newConfigs);
+    setTagConfigs(tagConfigs.filter((c) => c.name !== name));
   };
 
   if (!isConfigured) {
@@ -785,86 +832,172 @@ function App() {
           <div className="modal-content tag-manager-modal">
             <h2>Správa barev jazyků a tagů</h2>
             <div className="tag-configs-list">
-              {Object.entries(tagConfigs).map(([name, color]) => (
-                <div key={name} className="tag-manage-item-wrapper">
-                  <div
-                    className={`tag-manage-item ${expandedTag === name ? "expanded" : ""}`}
-                  >
+              {(() => {
+                const languages = [
+                  "cz",
+                  "cs",
+                  "en",
+                  "sk",
+                  "de",
+                  "fr",
+                  "es",
+                  "it",
+                  "pl",
+                ];
+                const langConfigs = tagConfigs.filter((c) =>
+                  languages.includes(c.name.toLowerCase().trim()),
+                );
+                const otherConfigs = tagConfigs.filter(
+                  (c) => !languages.includes(c.name.toLowerCase().trim()),
+                );
+
+                const renderItem = ({
+                  name,
+                  color,
+                }: {
+                  name: string;
+                  color: string;
+                }) => (
+                  <div key={name} className="tag-manage-item-wrapper">
                     <div
-                      className="tag-preview-toggle"
+                      className={`tag-manage-item ${expandedTag === name ? "expanded" : ""}`}
                       onClick={() =>
                         setExpandedTag(expandedTag === name ? null : name)
                       }
-                      title="Klikněte pro změnu barvy"
+                      title="Klikněte kamkoliv pro výběr barvy"
+                      style={{ cursor: "pointer" }}
                     >
-                      {(() => {
-                        const { className, style } = getTagStyle(name);
-                        return (
-                          <span className={`chip ${className}`} style={style}>
-                            {name}
-                          </span>
-                        );
-                      })()}
-                      <ChevronDown
-                        size={14}
-                        className={`expand-icon ${expandedTag === name ? "rotated" : ""}`}
-                      />
+                      <div className="tag-preview-toggle">
+                        {(() => {
+                          const { className, style } = getTagStyle(name);
+                          const isEditing = editingTagName === name;
+
+                          return (
+                            <span
+                              className={`chip ${className}`}
+                              style={style}
+                              onClick={(e) => {
+                                if (!isEditing) {
+                                  e.stopPropagation();
+                                  setEditingTagName(name);
+                                  setEditingTagValue(name);
+                                }
+                              }}
+                              title="Klikněte pro úpravu názvu"
+                            >
+                              {isEditing ? (
+                                <input
+                                  autoFocus
+                                  className="tag-manage-input-field"
+                                  value={editingTagValue}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) =>
+                                    setEditingTagValue(e.target.value)
+                                  }
+                                  onBlur={() => {
+                                    updateTagName(name, editingTagValue);
+                                    setEditingTagName(null);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      updateTagName(name, editingTagValue);
+                                      setEditingTagName(null);
+                                    }
+                                    if (e.key === "Escape") {
+                                      setEditingTagName(null);
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                name
+                              )}
+                            </span>
+                          );
+                        })()}
+                        <ChevronDown
+                          size={14}
+                          className={`expand-icon ${expandedTag === name ? "rotated" : ""}`}
+                        />
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteTagConfig(name);
+                        }}
+                        className="delete-btn"
+                        title="Smazat konfiguraci tagu"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
 
-                    <button
-                      onClick={() => deleteTagConfig(name)}
-                      className="delete-btn"
-                      title="Smazat konfiguraci tagu"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-
-                  {expandedTag === name && (
-                    <div className="tag-color-controls-expanded">
-                      <div className="color-presets-grid">
-                        {TAG_COLOR_PRESETS.map((preset) => (
-                          <div
-                            key={preset}
-                            className={`color-preset ${color === preset ? "active" : ""}`}
-                            style={{ backgroundColor: preset }}
-                            onClick={() => updateTagColor(name, preset)}
-                            title={preset}
-                          />
-                        ))}
-                      </div>
-                      <div className="custom-color-picker">
-                        <div className="picker-pipette-wrapper">
-                          <Pipette size={14} className="pipette-icon" />
-                          <input
-                            type="color"
-                            value={color.startsWith("#") ? color : "#64748b"}
-                            onChange={(e) =>
-                              updateTagColor(name, e.target.value)
-                            }
-                            title="Vybrat vlastní barvu"
-                          />
+                    {expandedTag === name && (
+                      <div className="tag-color-controls-expanded">
+                        <div className="color-presets-grid">
+                          {TAG_COLOR_PRESETS.map((preset) => (
+                            <div
+                              key={preset}
+                              className={`color-preset ${color === preset ? "active" : ""}`}
+                              style={{ backgroundColor: preset }}
+                              onClick={() => updateTagColor(name, preset)}
+                              title={preset}
+                            />
+                          ))}
                         </div>
-                        <div className="hex-input-wrapper">
-                          <span className="hex-hash">#</span>
-                          <input
-                            type="text"
-                            className="hex-input"
-                            value={color.replace("#", "")}
-                            onChange={(e) => {
-                              const val = e.target.value.trim();
-                              if (val.length <= 6) {
-                                updateTagColor(name, `#${val}`);
+                        <div className="custom-color-picker">
+                          <div className="picker-pipette-wrapper">
+                            <Pipette size={14} className="pipette-icon" />
+                            <input
+                              type="color"
+                              value={color.startsWith("#") ? color : "#64748b"}
+                              onChange={(e) =>
+                                updateTagColor(name, e.target.value)
                               }
-                            }}
-                            placeholder="HEX"
-                          />
+                              title="Vybrat vlastní barvu"
+                            />
+                          </div>
+                          <div className="hex-input-wrapper">
+                            <span className="hex-hash">#</span>
+                            <input
+                              type="text"
+                              className="hex-input"
+                              value={color.replace("#", "")}
+                              onChange={(e) => {
+                                const val = e.target.value.trim();
+                                if (val.length <= 6) {
+                                  updateTagColor(name, `#${val}`);
+                                }
+                              }}
+                              placeholder="HEX"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                );
+
+                return (
+                  <>
+                    {langConfigs.length > 0 && (
+                      <div className="tag-manager-section">
+                        <h3 className="tag-manager-section-title">Jazyky</h3>
+                        {langConfigs.map(renderItem)}
+                      </div>
+                    )}
+                    {langConfigs.length > 0 && otherConfigs.length > 0 && (
+                      <div className="tag-manager-divider"></div>
+                    )}
+                    {otherConfigs.length > 0 && (
+                      <div className="tag-manager-section">
+                        <h3 className="tag-manager-section-title">Tagy</h3>
+                        {otherConfigs.map(renderItem)}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
             <button
               className="add-btn"
@@ -1393,16 +1526,6 @@ function App() {
                                               </span>
                                             );
                                           })}
-                                        {!(video.language || "").trim() && (
-                                          <span
-                                            style={{
-                                              color: "var(--text-muted)",
-                                              fontSize: "0.8rem",
-                                            }}
-                                          >
-                                            +
-                                          </span>
-                                        )}
                                       </div>
                                     )}
                                   </td>

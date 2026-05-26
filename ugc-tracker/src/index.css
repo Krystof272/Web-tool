@@ -1223,20 +1223,44 @@ tr:hover {
 .tag-manager-modal {
   max-width: 600px;
   width: 90%;
+  padding: 1rem 1.5rem !important; /* Even tighter modal padding */
 }
+
+.tag-manager-modal h2 {
+  margin-bottom: 0rem; /* Zero margin after main title */
+  font-size: 1.2rem;
+}
+
+.tag-manager-section-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-color);
+  font-weight: 800;
+  margin: 0.6rem 0 0.4rem 0.2rem; /* Drastically reduced section margins */
+  opacity: 0.7;
+}
+
+.tag-manager-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.8rem 0; /* Tightened divider gaps */
+  opacity: 0.2;
+}
+
 
 .tag-configs-list {
   max-height: 400px;
   overflow-y: auto;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   padding-right: 0.5rem;
 }
 
 .tag-manage-item-wrapper {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  margin-bottom: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  margin-bottom: 0.4rem; /* Tightened gap between items */
+  border: 1px solid rgba(255, 255, 255, 0.04);
   overflow: hidden;
 }
 
@@ -1249,9 +1273,10 @@ tr:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.8rem 1.2rem;
+  padding: 0.5rem 0.8rem; /* Miniaturized item padding */
   transition: background 0.2s;
 }
+
 
 .tag-manage-item.expanded {
   background: rgba(255, 255, 255, 0.02);
@@ -1265,6 +1290,29 @@ tr:hover {
   cursor: pointer;
   flex: 1;
 }
+
+.tag-manage-input-field {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0;
+  width: 100%;
+  min-width: 60px;
+  cursor: text;
+  outline: none;
+  text-align: left;
+  height: 0.1px;
+}
+
+.tag-preview-toggle .chip {
+  padding: 4px 10px;
+  min-width: 80px;
+  cursor: text;
+}
+
 
 .expand-icon {
   color: var(--text-muted);
