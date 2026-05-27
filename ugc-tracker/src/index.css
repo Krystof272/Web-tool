@@ -138,7 +138,7 @@ body {
 }
 
 .app-container {
-  max-width: 80%; /* Use 95% of screen width instead of fixed pixel max */
+  max-width: 80%; /* Use 80% of screen width instead of fixed pixel max */
   margin: 0 auto;
   padding: 1rem 2rem;
 }

@@ -402,25 +402,37 @@ function App() {
     });
   };
 
-  const toggleVideoStep = (id: string, step: "isDubbing" | "isSubtitles" | "isPublished") => {
-    setVideos(videos.map((v) => {
-      if (v.id === id) {
-        return { ...v, [step]: !v[step] };
-      }
-      return v;
-    }));
+  const toggleVideoStep = (
+    id: string,
+    step: "isDubbing" | "isSubtitles" | "isPublished",
+  ) => {
+    setVideos(
+      videos.map((v) => {
+        if (v.id === id) {
+          return { ...v, [step]: !v[step] };
+        }
+        return v;
+      }),
+    );
   };
 
-  const bulkUpdateStatus = (action: "reset" | "isDubbing" | "isSubtitles" | "isPublished") => {
+  const bulkUpdateStatus = (
+    action: "reset" | "isDubbing" | "isSubtitles" | "isPublished",
+  ) => {
     if (selectedIds.length === 0) return;
     setVideos(
       videos.map((v) => {
         if (!selectedIds.includes(v.id)) return v;
         if (action === "reset") {
-          return { ...v, isDubbing: false, isSubtitles: false, isPublished: false };
+          return {
+            ...v,
+            isDubbing: false,
+            isSubtitles: false,
+            isPublished: false,
+          };
         }
         return { ...v, [action]: true };
-      })
+      }),
     );
     setSelectedIds([]);
   };
@@ -1371,12 +1383,8 @@ function App() {
           const isFiltering = langFilter !== "" || tagFilter !== "";
           if (isFiltering && filteredVideos.length === 0) return null;
 
-          const todoVideos = filteredVideos.filter(
-            (v) => !v.isPublished,
-          );
-          const doneVideos = filteredVideos.filter(
-            (v) => v.isPublished,
-          );
+          const todoVideos = filteredVideos.filter((v) => !v.isPublished);
+          const doneVideos = filteredVideos.filter((v) => v.isPublished);
 
           const isCollapsed = collapsedCreators.includes(creator);
           const totalPublishedCount = allCreatorVideos.filter(
@@ -1572,10 +1580,15 @@ function App() {
                                     <div className="table-checklist">
                                       {[
                                         { key: "isDubbing", label: "Dabing" },
-                                        { key: "isSubtitles", label: "Titulky" },
+                                        {
+                                          key: "isSubtitles",
+                                          label: "Titulky",
+                                        },
                                         { key: "isPublished", label: "Pub" },
                                       ].map((step) => {
-                                        const isDone = video[step.key as keyof Video] as boolean;
+                                        const isDone = video[
+                                          step.key as keyof Video
+                                        ] as boolean;
 
                                         return (
                                           <div
@@ -1584,7 +1597,10 @@ function App() {
                                             onClick={() =>
                                               toggleVideoStep(
                                                 video.id,
-                                                step.key as "isDubbing" | "isSubtitles" | "isPublished"
+                                                step.key as
+                                                  | "isDubbing"
+                                                  | "isSubtitles"
+                                                  | "isPublished",
                                               )
                                             }
                                             title={step.label}
@@ -1712,16 +1728,6 @@ function App() {
                                               </span>
                                             );
                                           })}
-                                        {!(video.tags || "").trim() && (
-                                          <span
-                                            style={{
-                                              color: "var(--text-muted)",
-                                              fontSize: "0.8rem",
-                                            }}
-                                          >
-                                            +
-                                          </span>
-                                        )}
                                       </div>
                                     )}
                                   </td>
@@ -1895,7 +1901,10 @@ function App() {
                                       <div
                                         className="table-check-item done status-published"
                                         onClick={() =>
-                                          toggleVideoStep(video.id, "isPublished")
+                                          toggleVideoStep(
+                                            video.id,
+                                            "isPublished",
+                                          )
                                         }
                                       >
                                         <Circle size={16} fill="currentColor" />
@@ -2014,16 +2023,6 @@ function App() {
                                               </span>
                                             );
                                           })}
-                                        {!(video.tags || "").trim() && (
-                                          <span
-                                            style={{
-                                              color: "var(--text-muted)",
-                                              fontSize: "0.8rem",
-                                            }}
-                                          >
-                                            +
-                                          </span>
-                                        )}
                                       </div>
                                     )}
                                   </td>
@@ -2087,16 +2086,6 @@ function App() {
                       <div className="invoices-title">
                         <FileText size={16} />
                         <span>Faktury</span>
-                        <button
-                          className="add-invoice-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addInvoice(creator);
-                          }}
-                          title="Přidat novou fakturu"
-                        >
-                          <Plus size={14} /> Přidat
-                        </button>
                         {collapsedInvoices.includes(creator) ? (
                           <ChevronRight size={14} />
                         ) : (
@@ -2107,6 +2096,17 @@ function App() {
 
                     {!collapsedInvoices.includes(creator) && (
                       <div className="invoices-content">
+                        <button
+                          className="add-invoice-btn"
+                          style={{ marginBottom: "1rem" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addInvoice(creator);
+                          }}
+                          title="Přidat novou fakturu"
+                        >
+                          <Plus size={14} /> Přidat fakturu
+                        </button>
                         {(() => {
                           const creatorInvoices = invoices
                             .filter(
