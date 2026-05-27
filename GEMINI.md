@@ -10,7 +10,7 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 
 ## Hlavní Funkce
 
-- **Workflow (Tabulkový layout):** Videa jsou zobrazena v řádcích s interaktivním postupem (Dabing → Titulky → Pub). Kliknutím na sekci produkce se stav cyklicky mění.
+- **Workflow (Tabulkový layout):** Videa jsou zobrazena v řádcích s interaktivním postupem (Dabing, Titulky, Pub). Tyto stavy jsou nezávislé a lze je zaškrtávat libovolně v jakémkoli pořadí.
 - **Organizace:** Seskupování videí podle tvůrců. Nově lze neomezeně přidávat, přejmenovávat a mazat aplikace (karty).
 - **Hromadné akce:** Podpora multi-výběru videí (checkboxy) s plovoucí lištou pro hromadnou změnu stavu nebo smazání.
 - **Sbalitelné sekce:** Možnost sbalit sekci tvůrce s rychlým souhrnem progresu (zobrazuje reálný stav i při aktivních filtrech). Vždy viditelní tvůrci i bez videí.

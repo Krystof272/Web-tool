@@ -9,7 +9,9 @@ export interface Video {
   videoUrl?: string;
   tags: string;
   notes: string;
-  status: ProductionStatus;
+  isDubbing: boolean;
+  isSubtitles: boolean;
+  isPublished: boolean;
   createdAt: number;
 }
 

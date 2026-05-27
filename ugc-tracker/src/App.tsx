@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import type { Video, ProductionStatus, Invoice } from "./types";
+import type { Video, Invoice } from "./types";
 import {
   Plus,
   Circle,
@@ -211,16 +211,25 @@ function App() {
         collapsedPublished: savedCollapsedPublished,
       } = parsed;
 
-      // Migrate back to single status if needed, remove invoice data
+      // Migrate to independent booleans
       const migratedVideos = (videos || []).map((v: any) => {
-        let finalStatus = v.status;
-        if (!v.status) {
-          finalStatus = "dubbing";
-          if (v.published) finalStatus = "published";
-          else if (v.subtitlesDone) finalStatus = "subtitles";
+        let isDubbing = v.isDubbing ?? false;
+        let isSubtitles = v.isSubtitles ?? false;
+        let isPublished = v.isPublished ?? false;
+
+        // If migrating from sequential status
+        if (v.status !== undefined) {
+          isDubbing = v.status === "dubbing" || v.status === "subtitles" || v.status === "published";
+          isSubtitles = v.status === "subtitles" || v.status === "published";
+          isPublished = v.status === "published";
+        } else if (v.dubbingDone !== undefined) {
+           isDubbing = v.dubbingDone;
+           isSubtitles = v.subtitlesDone;
+           isPublished = v.published;
         }
 
         const {
+          status,
           dubbingDone,
           subtitlesDone,
           published,
@@ -230,7 +239,6 @@ function App() {
           ...rest
         } = v;
 
-        // Ensure tags is a string
         let finalTags = v.tags;
         if (Array.isArray(v.tags)) {
           finalTags = v.tags.join(", ");
@@ -238,7 +246,7 @@ function App() {
           finalTags = "";
         }
 
-        return { ...rest, status: finalStatus, tags: finalTags };
+        return { ...rest, isDubbing, isSubtitles, isPublished, tags: finalTags };
       });
 
       setApps(apps || []);
@@ -370,7 +378,9 @@ function App() {
       videoUrl: newVideo.videoUrl,
       tags: newVideo.tags,
       notes: newVideo.notes,
-      status: "ready",
+      isDubbing: false,
+      isSubtitles: false,
+      isPublished: false,
       createdAt: Date.now(),
     };
 
@@ -388,33 +398,25 @@ function App() {
     });
   };
 
-  const toggleStatus = (id: string, currentStatus: ProductionStatus) => {
-    let nextStatus: ProductionStatus;
-
-    if (currentStatus === "published") {
-      nextStatus = "subtitles";
-    } else {
-      const statuses: ProductionStatus[] = [
-        "ready",
-        "dubbing",
-        "subtitles",
-        "published",
-      ];
-      const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
-      nextStatus = statuses[nextIndex];
-    }
-
-    setVideos(
-      videos.map((v) => (v.id === id ? { ...v, status: nextStatus } : v)),
-    );
+  const toggleVideoStep = (id: string, step: "isDubbing" | "isSubtitles" | "isPublished") => {
+    setVideos(videos.map((v) => {
+      if (v.id === id) {
+        return { ...v, [step]: !v[step] };
+      }
+      return v;
+    }));
   };
 
-  const bulkUpdateStatus = (targetStatus: ProductionStatus) => {
+  const bulkUpdateStatus = (action: "reset" | "isDubbing" | "isSubtitles" | "isPublished") => {
     if (selectedIds.length === 0) return;
     setVideos(
-      videos.map((v) =>
-        selectedIds.includes(v.id) ? { ...v, status: targetStatus } : v,
-      ),
+      videos.map((v) => {
+        if (!selectedIds.includes(v.id)) return v;
+        if (action === "reset") {
+          return { ...v, isDubbing: false, isSubtitles: false, isPublished: false };
+        }
+        return { ...v, [action]: true };
+      })
     );
     setSelectedIds([]);
   };
@@ -1331,25 +1333,25 @@ function App() {
             <div className="bulk-buttons">
               <button
                 className="bulk-btn ready"
-                onClick={() => bulkUpdateStatus("ready")}
+                onClick={() => bulkUpdateStatus("reset")}
               >
                 Reset (Ready)
               </button>
               <button
                 className="bulk-btn dubbing"
-                onClick={() => bulkUpdateStatus("dubbing")}
+                onClick={() => bulkUpdateStatus("isDubbing")}
               >
                 Dabing
               </button>
               <button
                 className="bulk-btn subtitles"
-                onClick={() => bulkUpdateStatus("subtitles")}
+                onClick={() => bulkUpdateStatus("isSubtitles")}
               >
                 Titulky
               </button>
               <button
                 className="bulk-btn published"
-                onClick={() => bulkUpdateStatus("published")}
+                onClick={() => bulkUpdateStatus("isPublished")}
               >
                 Publikovat
               </button>
@@ -1392,15 +1394,15 @@ function App() {
           if (isFiltering && filteredVideos.length === 0) return null;
 
           const todoVideos = filteredVideos.filter(
-            (v) => v.status !== "published",
+            (v) => !v.isPublished,
           );
           const doneVideos = filteredVideos.filter(
-            (v) => v.status === "published",
+            (v) => v.isPublished,
           );
 
           const isCollapsed = collapsedCreators.includes(creator);
           const totalPublishedCount = allCreatorVideos.filter(
-            (v) => v.status === "published",
+            (v) => v.isPublished,
           ).length;
 
           const creatorInvoices = invoices.filter(
@@ -1591,31 +1593,20 @@ function App() {
                                   <td className="col-status">
                                     <div className="table-checklist">
                                       {[
-                                        { key: "dubbing", label: "Dabing" },
-                                        { key: "subtitles", label: "Titulky" },
-                                        { key: "published", label: "Pub" },
+                                        { key: "isDubbing", label: "Dabing" },
+                                        { key: "isSubtitles", label: "Titulky" },
+                                        { key: "isPublished", label: "Pub" },
                                       ].map((step) => {
-                                        const statuses = [
-                                          "ready",
-                                          "dubbing",
-                                          "subtitles",
-                                          "published",
-                                        ];
-                                        const isDone = statuses
-                                          .slice(
-                                            0,
-                                            statuses.indexOf(video.status) + 1,
-                                          )
-                                          .includes(step.key);
+                                        const isDone = video[step.key as keyof Video] as boolean;
 
                                         return (
                                           <div
                                             key={step.key}
-                                            className={`table-check-item ${isDone ? "done" : ""} status-${step.key}`}
+                                            className={`table-check-item ${isDone ? "done" : ""} status-${step.key.replace("is", "").toLowerCase()}`}
                                             onClick={() =>
-                                              toggleStatus(
+                                              toggleVideoStep(
                                                 video.id,
-                                                video.status,
+                                                step.key as "isDubbing" | "isSubtitles" | "isPublished"
                                               )
                                             }
                                             title={step.label}
@@ -1926,7 +1917,7 @@ function App() {
                                       <div
                                         className="table-check-item done status-published"
                                         onClick={() =>
-                                          toggleStatus(video.id, video.status)
+                                          toggleVideoStep(video.id, "isPublished")
                                         }
                                       >
                                         <Circle size={16} fill="currentColor" />
