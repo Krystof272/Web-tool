@@ -190,6 +190,48 @@ function App() {
     }));
   };
 
+  const migrateVideos = (videos: any[]) => {
+    return (videos || []).map((v: any) => {
+      let isDubbing = v.isDubbing ?? false;
+      let isSubtitles = v.isSubtitles ?? false;
+      let isPublished = v.isPublished ?? false;
+
+      // If migrating from sequential status
+      if (v.status !== undefined) {
+        isDubbing =
+          v.status === "dubbing" ||
+          v.status === "subtitles" ||
+          v.status === "published";
+        isSubtitles = v.status === "subtitles" || v.status === "published";
+        isPublished = v.status === "published";
+      } else if (v.dubbingDone !== undefined) {
+        isDubbing = v.dubbingDone;
+        isSubtitles = v.subtitlesDone;
+        isPublished = v.published;
+      }
+
+      const {
+        status,
+        dubbingDone,
+        subtitlesDone,
+        published,
+        invoiceStatus,
+        invoiceReceived,
+        invoicePaid,
+        ...rest
+      } = v;
+
+      let finalTags = v.tags;
+      if (Array.isArray(v.tags)) {
+        finalTags = v.tags.join(", ");
+      } else if (v.tags === undefined || v.tags === null) {
+        finalTags = "";
+      }
+
+      return { ...rest, isDubbing, isSubtitles, isPublished, tags: finalTags };
+    });
+  };
+
   // Load data
   useEffect(() => {
     const savedTheme = localStorage.getItem(THEME_KEY) as "light" | "dark";
@@ -211,46 +253,8 @@ function App() {
         collapsedPublished: savedCollapsedPublished,
       } = parsed;
 
-      // Migrate to independent booleans
-      const migratedVideos = (videos || []).map((v: any) => {
-        let isDubbing = v.isDubbing ?? false;
-        let isSubtitles = v.isSubtitles ?? false;
-        let isPublished = v.isPublished ?? false;
-
-        // If migrating from sequential status
-        if (v.status !== undefined) {
-          isDubbing = v.status === "dubbing" || v.status === "subtitles" || v.status === "published";
-          isSubtitles = v.status === "subtitles" || v.status === "published";
-          isPublished = v.status === "published";
-        } else if (v.dubbingDone !== undefined) {
-           isDubbing = v.dubbingDone;
-           isSubtitles = v.subtitlesDone;
-           isPublished = v.published;
-        }
-
-        const {
-          status,
-          dubbingDone,
-          subtitlesDone,
-          published,
-          invoiceStatus,
-          invoiceReceived,
-          invoicePaid,
-          ...rest
-        } = v;
-
-        let finalTags = v.tags;
-        if (Array.isArray(v.tags)) {
-          finalTags = v.tags.join(", ");
-        } else if (v.tags === undefined || v.tags === null) {
-          finalTags = "";
-        }
-
-        return { ...rest, isDubbing, isSubtitles, isPublished, tags: finalTags };
-      });
-
       setApps(apps || []);
-      setVideos(migratedVideos);
+      setVideos(migrateVideos(videos));
       setInvoices(savedInvoices || []);
       setCreators(creators || INITIAL_CREATORS);
       setTagConfigs(migrateTagConfigs(savedTagConfigs));
@@ -505,33 +509,7 @@ function App() {
           )
         ) {
           // Robust video migration
-          const migratedVideos = (imported.videos || []).map((v: any) => {
-            let finalStatus = v.status;
-            if (!v.status) {
-              finalStatus = "dubbing";
-              if (v.published) finalStatus = "published";
-              else if (v.subtitlesDone) finalStatus = "subtitles";
-            }
-
-            const {
-              dubbingDone,
-              subtitlesDone,
-              published,
-              invoiceStatus,
-              invoiceReceived,
-              invoicePaid,
-              ...rest
-            } = v;
-
-            let finalTags = v.tags;
-            if (Array.isArray(v.tags)) {
-              finalTags = v.tags.join(", ");
-            } else if (v.tags === undefined || v.tags === null) {
-              finalTags = "";
-            }
-
-            return { ...rest, status: finalStatus, tags: finalTags };
-          });
+          const migratedVideos = migrateVideos(imported.videos);
 
           setApps(imported.apps || []);
           setVideos(migratedVideos);
