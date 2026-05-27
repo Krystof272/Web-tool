@@ -130,7 +130,7 @@ function App() {
     if (!resizingRef.current) return;
     const { key, startX, startWidth } = resizingRef.current;
     const deltaX = e.clientX - startX;
-    const newWidth = Math.max(10, startWidth + deltaX);
+    const newWidth = Math.max(80, startWidth + deltaX);
     setColumnWidths((prev) => ({ ...prev, [key]: newWidth }));
   };
 
@@ -1640,13 +1640,8 @@ function App() {
                                       );
                                     case "notes":
                                       return (
-                                        <th
-                                          key={key}
-                                          className="col-notes"
-                                          style={{ width }}
-                                        >
+                                        <th key={key} className="col-notes">
                                           <span>Poznámky</span>
-                                          {resizer}
                                         </th>
                                       );
                                     default:
@@ -2093,13 +2088,8 @@ function App() {
                                       );
                                     case "notes":
                                       return (
-                                        <th
-                                          key={key}
-                                          className="col-notes"
-                                          style={{ width }}
-                                        >
+                                        <th key={key} className="col-notes">
                                           <span>Poznámky</span>
-                                          {resizer}
                                         </th>
                                       );
                                     default:

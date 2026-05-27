@@ -645,7 +645,8 @@ td {
 }
 
 .col-actions {
-  width: 60px !important;
+  width: 30px !important;
+  text-align: center;
 }
 
 /* Ensure containers don't collapse when content is absolute */
