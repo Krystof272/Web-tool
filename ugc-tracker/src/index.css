@@ -395,8 +395,8 @@ header {
   font-size: 1rem;
   padding: 4px 8px;
   border-radius: 4px;
-  flex: 1;
   transition: all 0.2s;
+  max-width: 180px;
 }
 
 .creator-manage-input:hover {
