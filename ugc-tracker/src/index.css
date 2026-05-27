@@ -885,7 +885,7 @@ tr:hover {
   font-size: 0.75rem;
   color: var(--text-muted);
   line-height: 1.2;
-  cursor: pointer;
+  cursor: text;
   padding: 4px 6px;
   width: 100%;
   box-sizing: border-box;
