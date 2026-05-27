@@ -56,6 +56,7 @@ const DEFAULT_TAG_CONFIGS: { name: string; color: string }[] = [
 
 const DEFAULT_COLUMN_ORDER: ColumnKey[] = [
   "title",
+  "url",
   "status",
   "lang",
   "tags",
@@ -63,7 +64,8 @@ const DEFAULT_COLUMN_ORDER: ColumnKey[] = [
 ];
 
 const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
-  title: 350,
+  title: 250,
+  url: 200,
   status: 220,
   lang: 140,
   tags: 200,
@@ -1574,6 +1576,17 @@ function App() {
                                           {resizer}
                                         </th>
                                       );
+                                    case "url":
+                                      return (
+                                        <th
+                                          key={key}
+                                          className="col-url"
+                                          style={{ width }}
+                                        >
+                                          <span>Odkaz</span>
+                                          {resizer}
+                                        </th>
+                                      );
                                     case "status":
                                       return (
                                         <th
@@ -1675,39 +1688,48 @@ function App() {
                                                   )
                                                 }
                                               />
-                                              <div className="url-edit-wrapper">
-                                                <input
-                                                  className="table-editable-field url-field"
-                                                  placeholder="Vložte odkaz..."
-                                                  value={video.videoUrl || ""}
-                                                  onChange={(e) =>
-                                                    updateVideoField(
-                                                      video.id,
-                                                      "videoUrl",
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                />
-                                                {video.videoUrl && (
-                                                  <button
-                                                    className="copy-link-btn"
-                                                    title="Kopírovat cestu"
-                                                    onClick={() => {
-                                                      if (video.videoUrl) {
-                                                        navigator.clipboard.writeText(
-                                                          video.videoUrl,
-                                                        );
-                                                        showToast(
-                                                          "Cesta zkopírována! 🚀",
-                                                          "Cmd+Shift+G ve Finderu",
-                                                        );
-                                                      }
-                                                    }}
-                                                  >
-                                                    <Copy size={14} />
-                                                  </button>
-                                                )}
-                                              </div>
+                                            </div>
+                                          </td>
+                                        );
+                                      case "url":
+                                        return (
+                                          <td
+                                            key={key}
+                                            className="col-url"
+                                            style={{ width }}
+                                          >
+                                            <div className="url-edit-wrapper">
+                                              <input
+                                                className="table-editable-field url-field"
+                                                placeholder="Vložte odkaz..."
+                                                value={video.videoUrl || ""}
+                                                onChange={(e) =>
+                                                  updateVideoField(
+                                                    video.id,
+                                                    "videoUrl",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                              />
+                                              {video.videoUrl && (
+                                                <button
+                                                  className="copy-link-btn"
+                                                  title="Kopírovat cestu"
+                                                  onClick={() => {
+                                                    if (video.videoUrl) {
+                                                      navigator.clipboard.writeText(
+                                                        video.videoUrl,
+                                                      );
+                                                      showToast(
+                                                        "Cesta zkopírována! 🚀",
+                                                        "Cmd+Shift+G ve Finderu",
+                                                      );
+                                                    }
+                                                  }}
+                                                >
+                                                  <Copy size={14} />
+                                                </button>
+                                              )}
                                             </div>
                                           </td>
                                         );
@@ -2025,6 +2047,17 @@ function App() {
                                           {resizer}
                                         </th>
                                       );
+                                    case "url":
+                                      return (
+                                        <th
+                                          key={key}
+                                          className="col-url"
+                                          style={{ width }}
+                                        >
+                                          <span>Odkaz</span>
+                                          {resizer}
+                                        </th>
+                                      );
                                     case "status":
                                       return (
                                         <th
@@ -2108,39 +2141,48 @@ function App() {
                                                   )
                                                 }
                                               />
-                                              <div className="url-edit-wrapper">
-                                                <input
-                                                  className="table-editable-field url-field"
-                                                  placeholder="Vložte odkaz..."
-                                                  value={video.videoUrl || ""}
-                                                  onChange={(e) =>
-                                                    updateVideoField(
-                                                      video.id,
-                                                      "videoUrl",
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                />
-                                                {video.videoUrl && (
-                                                  <button
-                                                    className="copy-link-btn"
-                                                    title="Kopírovat cestu"
-                                                    onClick={() => {
-                                                      if (video.videoUrl) {
-                                                        navigator.clipboard.writeText(
-                                                          video.videoUrl,
-                                                        );
-                                                        showToast(
-                                                          "Cesta zkopírována! 🚀",
-                                                          "Cmd+Shift+G ve Finderu",
-                                                        );
-                                                      }
-                                                    }}
-                                                  >
-                                                    <Copy size={14} />
-                                                  </button>
-                                                )}
-                                              </div>
+                                            </div>
+                                          </td>
+                                        );
+                                      case "url":
+                                        return (
+                                          <td
+                                            key={key}
+                                            className="col-url"
+                                            style={{ width }}
+                                          >
+                                            <div className="url-edit-wrapper">
+                                              <input
+                                                className="table-editable-field url-field"
+                                                placeholder="Vložte odkaz..."
+                                                value={video.videoUrl || ""}
+                                                onChange={(e) =>
+                                                  updateVideoField(
+                                                    video.id,
+                                                    "videoUrl",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                              />
+                                              {video.videoUrl && (
+                                                <button
+                                                  className="copy-link-btn"
+                                                  title="Kopírovat cestu"
+                                                  onClick={() => {
+                                                    if (video.videoUrl) {
+                                                      navigator.clipboard.writeText(
+                                                        video.videoUrl,
+                                                      );
+                                                      showToast(
+                                                        "Cesta zkopírována! 🚀",
+                                                        "Cmd+Shift+G ve Finderu",
+                                                      );
+                                                    }
+                                                  }}
+                                                >
+                                                  <Copy size={14} />
+                                                </button>
+                                              )}
                                             </div>
                                           </td>
                                         );

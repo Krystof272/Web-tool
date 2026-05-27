@@ -1,6 +1,6 @@
 export type ProductionStatus = 'ready' | 'dubbing' | 'subtitles' | 'published';
 
-export type ColumnKey = 'title' | 'status' | 'lang' | 'tags' | 'notes';
+export type ColumnKey = 'title' | 'url' | 'status' | 'lang' | 'tags' | 'notes';
 
 export type ColumnWidths = Record<ColumnKey, number>;
 

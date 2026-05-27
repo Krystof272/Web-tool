@@ -28,8 +28,8 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 
 ## Vývojové Konvence
 
-- **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví. Horizontální layout pro název a cestu videa.
-- **Stabilitu UI:** Fixní šířky sloupců (Jazyk: 140px, Tagy: 200px, Poznámky: 180px) a fixní výšky kontejnerů, aby se zabránilo poskakování tabulky při interakci.
+- **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví. Název a URL odkaz jsou rozděleny do samostatných sloupců s možností nezávislé změny šířky.
+- **Stabilitu UI:** Fixní šířky sloupců (Jazyk: 140px, Tagy: 200px, Poznámky: 180px, URL: 200px) a fixní výšky kontejnerů, aby se zabránilo poskakování tabulky při interakci. Každý sloupec má vlastní posuvník (resizer) pro úpravu šířky.
 - **Data:** Tagy jsou ukládány v poli (Array) pro zachování pořadí. Program obsahuje migrační vrstvu pro bezpečné nahrávání starších záloh (Object format).
 - **Stav:** Aplikace využívá React `useState`, `useEffect` a `useRef` pro synchronizaci stavu a detekci kliknutí mimo prvky.
 
