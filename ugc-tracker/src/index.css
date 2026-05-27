@@ -401,7 +401,7 @@ header {
   padding: 4px 8px;
   border-radius: 4px;
   transition: all 0.2s;
-  max-width: 180px;
+  max-width: 60%;
 }
 
 .creator-manage-input:hover {
@@ -456,7 +456,7 @@ header {
   margin-bottom: 2rem;
   background: var(--bg-card);
   border-radius: 12px;
-  /* overflow: hidden; Removed to allow absolute notes to break out */
+  overflow: hidden;
   border: 1px solid var(--border-color);
 }
 
@@ -525,7 +525,7 @@ header {
 
 .video-table-container {
   width: 100%;
-  /* overflow-x: auto; Removed to allow absolute notes to break out */
+  overflow-x: auto;
   background: rgba(255, 255, 255, 0.01);
 }
 
@@ -977,6 +977,30 @@ td {
 
 .notes-preview:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.creator-section {
+  margin-bottom: 2rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+.creator-section.is-editing-section {
+  z-index: 3000;
+  overflow: visible !important;
+}
+
+.creator-section.is-editing-section .video-table-container {
+  overflow: visible !important;
+}
+
+.is-editing-row {
+  position: relative;
+  z-index: 5000;
+  background: rgba(100, 108, 255, 0.05) !important;
 }
 
 .table-editable-notes {

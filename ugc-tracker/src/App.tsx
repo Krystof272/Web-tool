@@ -1464,12 +1464,15 @@ function App() {
             (inv) => inv.isPaid,
           ).length;
 
+          const isEditingInSection = allCreatorVideos.some(
+            (v) => editingField?.id === v.id,
+          );
+
           return (
             <section
               key={index}
-              className={`creator-section ${isCollapsed ? "collapsed" : ""}`}
-            >
-              <div
+              className={`creator-section ${isCollapsed ? "collapsed" : ""} ${isEditingInSection ? "is-editing-section" : ""}`}
+            >              <div
                 className="creator-header"
                 onClick={() => toggleCollapse(creator)}
               >
@@ -1654,7 +1657,14 @@ function App() {
                             </thead>
                             <tbody>
                               {todoVideos.map((video) => (
-                                <tr key={video.id}>
+                                <tr
+                                  key={video.id}
+                                  className={
+                                    editingField?.id === video.id
+                                      ? "is-editing-row"
+                                      : ""
+                                  }
+                                >
                                   <td className="col-select">
                                     <input
                                       type="checkbox"
@@ -2102,7 +2112,14 @@ function App() {
                             </thead>
                             <tbody>
                               {doneVideos.map((video) => (
-                                <tr key={video.id}>
+                                <tr
+                                  key={video.id}
+                                  className={
+                                    editingField?.id === video.id
+                                      ? "is-editing-row"
+                                      : ""
+                                  }
+                                >
                                   <td className="col-select">
                                     <input
                                       type="checkbox"

@@ -28,14 +28,14 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 
 ## Vývojové Konvence
 
-- **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví. Název a URL odkaz jsou rozděleny do samostatných sloupců s možností nezávislé změny šířky.
-- **Stabilitu UI:** Fixní šířky sloupců (Jazyk: 140px, Tagy: 200px, Poznámky: 180px, URL: 200px) a fixní výšky kontejnerů, aby se zabránilo poskakování tabulky při interakci. Každý sloupec má vlastní posuvník (resizer) pro úpravu šířky.
+- **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví. Název videa a URL odkaz jsou rozděleny do samostatných sloupců pro lepší přehlednost.
+- **Stabilitu UI:** Fixní šířky sloupců (Jazyk: 140px, Tagy: 200px, URL: 200px) s možností plynulé změny šířky pomocí viditelných posuvníků (resizerů) s limitem 700px. Sloupec poznámek je flexibilní a automaticky vyplňuje zbývající prostor vpravo, čímž eliminuje prázdná místa i na širokých monitorech.
 - **Data:** Tagy jsou ukládány v poli (Array) pro zachování pořadí. Program obsahuje migrační vrstvu pro bezpečné nahrávání starších záloh (Object format).
-- **Stav:** Aplikace využívá React `useState`, `useEffect` a `useRef` pro synchronizaci stavu a detekci kliknutí mimo prvky.
+- **Stav:** Aplikace využívá React `useState`, `useEffect` a `useRef` pro synchronizaci stavu a detekci kliknutí mimo prvky. Editační okna využívají dynamický `z-index` a třídy `.is-editing-row`, aby byla vždy navrchu bez ořezávání hranou tabulky.
 
 ## Struktura souborů
 ... rest of section ...
 
 ## Stav Projektu
 
-- **Květen 2026 (Aktualizace):** Dokončena komplexní optimalizace workflow. Implementován dynamický systém výběru tagů, inkrementální načítání faktur a plná podpora širokoúhlých displejů. UI je nyní naprosto stabilní díky fixním šířkám sloupců a overlay editorům, které eliminují layout shifty. Projekt úspěšně prochází build procesem (`npm run build`).
+- **Květen 2026 (Aktualizace):** Dokončena komplexní optimalizace workflow. Implementován samostatný sloupec pro URL s vlastním posuvníkem, vylepšena viditelnost resizerů a optimalizováno zobrazení poznámek. Editační okno poznámek je nyní větší (350x180px), ukotvené vpravo a díky vylepšenému stacking contextu se vždy zobrazuje nad všemi ostatními prvky tabulky. UI je plně stabilní a využívá 80–95 % šířky obrazovky bez layout shiftů. Projekt úspěšně prochází build procesem (`npm run build`).
