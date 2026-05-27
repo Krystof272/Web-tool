@@ -645,6 +645,10 @@ td {
   white-space: nowrap;
 }
 
+.col-notes {
+  overflow: visible !important;
+}
+
 .col-select {
   width: 40px !important;
 }
@@ -951,11 +955,12 @@ td {
 .notes-preview {
   font-size: 0.75rem;
   color: var(--text-muted);
-  line-height: 1.2;
+  line-height: 130%;
   cursor: text;
   padding: 4px 6px;
   width: 100%;
   box-sizing: border-box;
+  white-space: normal !important;
   
   /* Multiline Ellipsis Logic */
   display: -webkit-box !important;
