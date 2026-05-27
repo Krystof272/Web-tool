@@ -600,26 +600,31 @@ tr:hover {
 
 .resizer {
   position: absolute;
-  right: -2px;
+  right: -1px;
   top: 0;
   height: 100%;
-  width: 8px;
-  background: transparent;
+  width: 4px;
+  background: rgba(255, 255, 255, 0.247);
+  border-right: 1px solid var(--border-color);
   cursor: col-resize;
   user-select: none;
   touch-action: none;
   z-index: 100;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .resizer:hover {
-  background: rgba(100, 108, 255, 0.2);
+  background: rgba(100, 108, 255, 0.3);
+  border-right: 2px solid var(--accent-color);
+  width: 6px;
+  right: -2px;
 }
 
 .resizer.is-resizing {
   background: var(--accent-color) !important;
   width: 2px;
   right: 0;
+  opacity: 1;
 }
 
 th {

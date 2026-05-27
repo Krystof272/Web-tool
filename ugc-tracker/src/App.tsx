@@ -130,7 +130,8 @@ function App() {
     if (!resizingRef.current) return;
     const { key, startX, startWidth } = resizingRef.current;
     const deltaX = e.clientX - startX;
-    const newWidth = Math.max(80, startWidth + deltaX);
+    // Set min 80px and max 700px for all columns
+    const newWidth = Math.min(700, Math.max(80, startWidth + deltaX));
     setColumnWidths((prev) => ({ ...prev, [key]: newWidth }));
   };
 
