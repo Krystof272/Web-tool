@@ -605,7 +605,7 @@ tr:hover {
   padding: 4px;
   min-height: 28px;
   align-items: center;
-  cursor: text;
+  cursor: pointer;
   border-radius: 6px;
   border: 1px solid transparent;
   transition: all 0.2s;
@@ -626,6 +626,7 @@ tr:hover {
   white-space: nowrap;
   border: none;
   transition: transform 0.1s;
+  cursor: pointer;
 }
 
 .chip:hover {
