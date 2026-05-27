@@ -584,11 +584,64 @@ tr:hover {
   background: var(--table-hover);
 }
 
-.col-lang { width: 140px; min-width: 140px; }
-.col-tags { width: 200px; min-width: 200px; }
-.col-notes { width: 180px; min-width: 180px; position: relative; }
-.col-status { width: 220px; min-width: 220px; }
-.col-title { min-width: 250px; } /* Title can still be flexible */
+.col-lang, .col-tags, .col-notes, .col-status, .col-title {
+  min-width: 0 !important;
+}
+
+.video-table-container table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.resizer {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  height: 100%;
+  width: 8px;
+  background: transparent;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 100;
+  transition: background 0.2s;
+}
+
+.resizer:hover {
+  background: rgba(100, 108, 255, 0.2);
+}
+
+.resizer.is-resizing {
+  background: var(--accent-color) !important;
+  width: 2px;
+  right: 0;
+}
+
+th {
+  position: relative;
+  overflow: visible !important;
+}
+
+th span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-select {
+  width: 40px !important;
+}
+
+.col-actions {
+  width: 60px !important;
+}
 
 /* Ensure containers don't collapse when content is absolute */
 .chips-container, .table-notes-container {

@@ -1,5 +1,9 @@
 export type ProductionStatus = 'ready' | 'dubbing' | 'subtitles' | 'published';
 
+export type ColumnKey = 'title' | 'status' | 'lang' | 'tags' | 'notes';
+
+export type ColumnWidths = Record<ColumnKey, number>;
+
 export interface Video {
   id: string;
   title: string;
