@@ -18,6 +18,7 @@ import {
   Pipette,
   GripVertical,
   Search,
+  History,
 } from "lucide-react";
 
 import {
@@ -191,13 +192,15 @@ const SortableRow = ({
                     className="table-editable-field url-field"
                     placeholder="Vložte odkaz..."
                     value={video.videoUrl || ""}
-                    onFocus={() =>
+                    onFocus={() => {
                       setEditingField({
                         id: video.id,
                         field: "videoUrl",
-                      })
-                    }
-                    onBlur={() => setEditingField(null)}
+                      });
+                    }}
+                    onBlur={() => {
+                      setEditingField(null);
+                    }}
                     onChange={(e) =>
                       updateVideoField(video.id, "videoUrl", e.target.value)
                     }
@@ -236,23 +239,23 @@ const SortableRow = ({
                         !video.isPublished || step.key === "isPublished",
                     )
                     .map((step) => {
-                    const isDone = video[step.key as keyof Video] as boolean;
-                    return (
-                      <div
-                        key={step.key}
-                        className={`table-check-item ${isDone ? "done" : ""} status-${step.key.replace("is", "").toLowerCase()}`}
-                        onClick={() =>
-                          toggleVideoStep(video.id, step.key as any)
-                        }
-                        title={step.label}
-                      >
-                        <Circle
-                          size={16}
-                          fill={isDone ? "currentColor" : "none"}
-                        />
-                      </div>
-                    );
-                  })}
+                      const isDone = video[step.key as keyof Video] as boolean;
+                      return (
+                        <div
+                          key={step.key}
+                          className={`table-check-item ${isDone ? "done" : ""} status-${step.key.replace("is", "").toLowerCase()}`}
+                          onClick={() =>
+                            toggleVideoStep(video.id, step.key as any)
+                          }
+                          title={step.label}
+                        >
+                          <Circle
+                            size={16}
+                            fill={isDone ? "currentColor" : "none"}
+                          />
+                        </div>
+                      );
+                    })}
                 </div>
               </td>
             );
@@ -396,13 +399,57 @@ const SortableRow = ({
         }
       })}
       <td className="col-actions">
-        <button
-          onClick={() => deleteVideo(video.id)}
-          className="delete-btn"
-          title="Smazat"
-        >
-          <Trash2 size={14} />
-        </button>
+        <div className="action-buttons-wrapper">
+          <div className="history-wrapper">
+            <button
+              onClick={() =>
+                setEditingField({ id: video.id, field: "history" })
+              }
+              className="history-btn"
+              title="Historie změn"
+            >
+              <History size={14} />
+            </button>
+            {editingField?.id === video.id &&
+              editingField?.field === "history" && (
+                <div className="history-popover" ref={selectorRef}>
+                  <div className="history-popover-header">
+                    <span>Historie produkce</span>
+                    <button
+                      className="close-popover"
+                      onClick={() => setEditingField(null)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="history-entries">
+                    {(video.history || [])
+                      .sort((a, b) => b.timestamp - a.timestamp)
+                      .map((entry, i) => {
+                        const d = new Date(entry.timestamp);
+                        const dateStr = `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1).toString().padStart(2, "0")}. ${d.getHours()}:${d.getMinutes().toString().padStart(2, "0")}`;
+                        return (
+                          <div key={i} className="history-entry">
+                            <span className="history-time">{dateStr}</span>
+                            <span className="history-label">{entry.label}</span>
+                          </div>
+                        );
+                      })}
+                    {(!video.history || video.history.length === 0) && (
+                      <div className="history-empty">Žádná historie.</div>
+                    )}
+                  </div>
+                </div>
+              )}
+          </div>
+          <button
+            onClick={() => deleteVideo(video.id)}
+            className="delete-btn"
+            title="Smazat"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -490,8 +537,8 @@ function App() {
     // Maximální šířka, kterou má tabulka k dispozici (vnitřní šířka šedého boxu)
     const containerWidth = appRef.current.clientWidth - 64; // 64px je padding (2rem + 2rem)
 
-    // Šířka fixních sloupců, které nejsou v columnWidths (Select: 40px, Actions: 30px) + rezerva na bordery (cca 10px)
-    const staticColumnsWidth = 40 + 30 + 10;
+    // Šířka fixních sloupců, které nejsou v columnWidths (Select: 40px, Actions: 150px) + rezerva na bordery (cca 10px)
+    const staticColumnsWidth = 40 + 150 + 10;
 
     // Součet šířek všech ostatních dynamických sloupců (kromě toho co měníme a kromě poznámek)
     const otherColumnsSum = Object.entries(columnWidths)
@@ -499,7 +546,7 @@ function App() {
       .reduce((sum, [_, w]) => sum + w, 0);
 
     // Rezerva pro flexibilní sloupec "Poznámky", aby nezmizel (min 180px)
-    const minNotesWidth = 280;
+    const minNotesWidth = 180;
 
     // x představuje limit, kam až můžeme sloupec rozšířit
     const x =
@@ -665,7 +712,18 @@ function App() {
         finalTags = "";
       }
 
-      return { ...rest, isDubbing, isSubtitles, isPublished, tags: finalTags };
+      const history = v.history || [
+        { label: "Vytvořeno", timestamp: v.createdAt || Date.now() },
+      ];
+
+      return {
+        ...rest,
+        isDubbing,
+        isSubtitles,
+        isPublished,
+        tags: finalTags,
+        history,
+      };
     });
   };
 
@@ -831,6 +889,7 @@ function App() {
       isSubtitles: false,
       isPublished: false,
       createdAt: Date.now(),
+      history: [{ label: "Vytvořeno", timestamp: Date.now() }],
     };
 
     setVideos([video, ...videos]);
@@ -854,7 +913,21 @@ function App() {
     setVideos(
       videos.map((v) => {
         if (v.id === id) {
-          return { ...v, [step]: !v[step] };
+          const isGoingDone = !v[step];
+          const labels = {
+            isDubbing: "Dabing",
+            isSubtitles: "Titulky",
+            isPublished: "Publikováno",
+          };
+          const newEntry = {
+            label: `${isGoingDone ? "Dokončeno" : "Zrušeno"}: ${labels[step]}`,
+            timestamp: Date.now(),
+          };
+          return {
+            ...v,
+            [step]: !v[step],
+            history: [newEntry, ...(v.history || [])],
+          };
         }
         return v;
       }),
@@ -868,15 +941,36 @@ function App() {
     setVideos(
       videos.map((v) => {
         if (!selectedIds.includes(v.id)) return v;
+
+        const labels = {
+          isDubbing: "Dabing",
+          isSubtitles: "Titulky",
+          isPublished: "Publikováno",
+        };
+
         if (action === "reset") {
+          const newEntry = {
+            label: "Reset (Hromadně)",
+            timestamp: Date.now(),
+          };
           return {
             ...v,
             isDubbing: false,
             isSubtitles: false,
             isPublished: false,
+            history: [newEntry, ...(v.history || [])],
           };
         }
-        return { ...v, [action]: true };
+
+        const newEntry = {
+          label: `Dokončeno: ${labels[action]} (Hromadně)`,
+          timestamp: Date.now(),
+        };
+        return {
+          ...v,
+          [action]: true,
+          history: [newEntry, ...(v.history || [])],
+        };
       }),
     );
     setSelectedIds([]);
@@ -920,6 +1014,7 @@ function App() {
       }),
     );
   };
+
   const exportData = () => {
     const data = JSON.stringify(
       {

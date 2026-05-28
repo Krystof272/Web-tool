@@ -1,5 +1,10 @@
 export type ProductionStatus = 'ready' | 'dubbing' | 'subtitles' | 'published';
 
+export interface HistoryEntry {
+  label: string;
+  timestamp: number;
+}
+
 export type ColumnKey = 'title' | 'url' | 'status' | 'lang' | 'tags' | 'notes';
 
 export type ColumnWidths = Record<ColumnKey, number>;
@@ -18,6 +23,7 @@ export interface Video {
   isPublished: boolean;
   createdAt: number;
   order?: number;
+  history?: HistoryEntry[];
 }
 
 export interface Invoice {

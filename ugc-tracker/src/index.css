@@ -659,7 +659,7 @@ td {
   white-space: nowrap;
 }
 
-.col-notes {
+.col-notes, .col-actions {
   overflow: visible !important;
 }
 
@@ -668,7 +668,7 @@ td {
 }
 
 .col-actions {
-  width: 30px !important;
+  width: 70px !important;
   text-align: center;
 }
 
@@ -1067,7 +1067,7 @@ table {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 2000;
+  z-index: 900; /* Lower than header (1000) */
   box-shadow: 0 8px 30px rgba(0,0,0,0.5);
   outline: none;
   overflow-y: auto;
@@ -1758,6 +1758,118 @@ table {
 
 .hex-input:focus {
   outline: none;
+}
+
+/* History Styles */
+.action-buttons-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.history-wrapper {
+  position: relative;
+}
+
+.history-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.history-btn:hover {
+  opacity: 1;
+  color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.history-popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 250px;
+  background: var(--bg-modal);
+  border: 1px solid var(--accent-color);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  z-index: 900; /* Lower than header (1000) */
+  margin-top: 5px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+.history-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-popover-header span {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  letter-spacing: 0.05em;
+}
+
+.close-popover {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.history-entries {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px 0;
+  scrollbar-width: thin;
+}
+
+.history-entry {
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.history-entry:last-child {
+  border-bottom: none;
+}
+
+.history-time {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.history-label {
+  font-size: 0.8rem;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.history-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
 }
 
 /* Specific input widths to prevent table layout shifting */
