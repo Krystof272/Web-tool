@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import type { Video, Invoice, ColumnKey, ColumnWidths } from "./types";
 import {
   Plus,
@@ -91,7 +91,7 @@ const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
   notes: 180,
 };
 
-const SortableRow = ({
+const SortableRow = memo(({
   video,
   selectedIds,
   toggleSelection,
@@ -453,7 +453,260 @@ const SortableRow = ({
       </td>
     </tr>
   );
-};
+});
+
+const TableHeader = memo(({
+  videos,
+  selectedIds,
+  setSelectedIds,
+  columnOrder,
+  columnWidths,
+  isResizing,
+  startResizing,
+  isPublishedTable = false,
+}: {
+  videos: Video[];
+  selectedIds: string[];
+  setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
+  columnOrder: ColumnKey[];
+  columnWidths: ColumnWidths;
+  isResizing: string | null;
+  startResizing: (key: ColumnKey, e: React.MouseEvent) => void;
+  isPublishedTable?: boolean;
+}) => {
+  const allIds = videos.map((v) => v.id);
+  const isAllSelected =
+    allIds.length > 0 && allIds.every((id) => selectedIds.includes(id));
+
+  return (
+    <thead>
+      <tr>
+        <th className="col-drag" style={{ width: "24px" }}></th>
+        <th className="col-select">
+          <input
+            type="checkbox"
+            checked={isAllSelected}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setSelectedIds((prev) => [...new Set([...prev, ...allIds])]);
+              } else {
+                setSelectedIds((prev) =>
+                  prev.filter((id) => !allIds.includes(id)),
+                );
+              }
+            }}
+          />
+        </th>
+        {columnOrder.map((key) => {
+          const width = columnWidths[key];
+          const resizer = (
+            <div
+              className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
+              onMouseDown={(e) => startResizing(key, e)}
+            />
+          );
+
+          switch (key) {
+            case "title":
+              return (
+                <th key={key} className="col-title" style={{ width }}>
+                  <span>Název</span>
+                  {resizer}
+                </th>
+              );
+            case "url":
+              return (
+                <th key={key} className="col-url" style={{ width }}>
+                  <span>Odkaz</span>
+                  {resizer}
+                </th>
+              );
+            case "status":
+              return (
+                <th key={key} className="col-status" style={{ width }}>
+                  {isPublishedTable ? (
+                    <span>Stav</span>
+                  ) : (
+                    <div className="header-workflow">
+                      <span className="stage-dubbing">Dabing</span>
+                      <ChevronRight size={14} className="separator" />
+                      <span className="stage-subtitles">Titulky</span>
+                      <ChevronRight size={14} className="separator" />
+                      <span className="stage-published">Publikováno</span>
+                    </div>
+                  )}
+                  {resizer}
+                </th>
+              );
+            case "lang":
+              return (
+                <th key={key} className="col-lang" style={{ width }}>
+                  <span>Jazyk</span>
+                  {resizer}
+                </th>
+              );
+            case "tags":
+              return (
+                <th key={key} className="col-tags" style={{ width }}>
+                  <span>Tagy</span>
+                  {resizer}
+                </th>
+              );
+            case "notes":
+              return (
+                <th key={key} className="col-notes">
+                  <span>Poznámky</span>
+                </th>
+              );
+            default:
+              return null;
+          }
+        })}
+        <th className="col-actions"></th>
+      </tr>
+    </thead>
+  );
+});
+
+const InvoiceTable = memo(({
+  creator,
+  currentApp,
+  invoices,
+  invoiceLimits,
+  setInvoiceLimits,
+  updateInvoice,
+  toggleInvoiceStatus,
+  deleteInvoice,
+  formatDate,
+}: {
+  creator: string;
+  currentApp: string;
+  invoices: Invoice[];
+  invoiceLimits: Record<string, number>;
+  setInvoiceLimits: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  updateInvoice: (id: string, field: keyof Invoice, value: any) => void;
+  toggleInvoiceStatus: (id: string) => void;
+  deleteInvoice: (id: string) => void;
+  formatDate: (d: string) => string;
+}) => {
+  const creatorInvoices = invoices
+    .filter((inv) => inv.creator === creator && inv.app === currentApp)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  if (creatorInvoices.length === 0) {
+    return <p className="no-invoices">Žádné faktury.</p>;
+  }
+
+  const currentLimit = invoiceLimits[creator] || 5;
+  const visibleInvoices = creatorInvoices.slice(0, currentLimit);
+
+  return (
+    <>
+      <table className="invoices-table">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Stav</th>
+            <th style={{ width: "50px" }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {visibleInvoices.map((inv) => (
+            <tr key={inv.id}>
+              <td>
+                <div className="invoice-date-cell">
+                  <Calendar size={14} className="field-icon" />
+                  <div
+                    className="invoice-date-wrapper"
+                    onClick={(e) => {
+                      const input = e.currentTarget.querySelector("input");
+                      if (input && "showPicker" in input) {
+                        try {
+                          (input as any).showPicker();
+                        } catch (err) {
+                          input.focus();
+                        }
+                      }
+                    }}
+                  >
+                    <span className="invoice-date-display">
+                      {formatDate(inv.date)}
+                    </span>
+                    <input
+                      type="date"
+                      className="invoice-date-input"
+                      value={inv.date}
+                      onChange={(e) =>
+                        updateInvoice(inv.id, "date", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div
+                  className="invoice-status-cycle"
+                  onClick={() => toggleInvoiceStatus(inv.id)}
+                >
+                  {!inv.isReceived && !inv.isPaid && (
+                    <span className="status-chip empty">Žádný stav</span>
+                  )}
+                  {inv.isReceived && !inv.isPaid && (
+                    <span className="status-chip active received">
+                      <Check size={12} /> Přijato
+                    </span>
+                  )}
+                  {inv.isPaid && (
+                    <span className="status-chip active paid">
+                      <Check size={12} /> Zaplaceno
+                    </span>
+                  )}
+                </div>
+              </td>
+              <td className="col-actions">
+                <button
+                  onClick={() => deleteInvoice(inv.id)}
+                  className="delete-btn"
+                  title="Smazat fakturu"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="invoice-pagination-controls">
+        {creatorInvoices.length > currentLimit && (
+          <button
+            className="show-more-invoices"
+            onClick={() =>
+              setInvoiceLimits((prev) => ({
+                ...prev,
+                [creator]: currentLimit + 5,
+              }))
+            }
+          >
+            Zobrazit dalších 5 (zbývá {creatorInvoices.length - currentLimit})
+          </button>
+        )}
+        {currentLimit > 5 && (
+          <button
+            className="show-more-invoices secondary"
+            onClick={() =>
+              setInvoiceLimits((prev) => ({
+                ...prev,
+                [creator]: 5,
+              }))
+            }
+          >
+            Zobrazit méně
+          </button>
+        )}
+      </div>
+    </>
+  );
+});
 
 function App() {
   const [apps, setApps] = useState<string[]>([]);
@@ -906,114 +1159,125 @@ function App() {
     });
   };
 
-  const toggleVideoStep = (
-    id: string,
-    step: "isDubbing" | "isSubtitles" | "isPublished",
-  ) => {
-    setVideos(
-      videos.map((v) => {
-        if (v.id === id) {
-          const isGoingDone = !v[step];
-          const labels = {
-            isDubbing: "Dabing",
-            isSubtitles: "Titulky",
-            isPublished: "Publikováno",
-          };
-          const newEntry = {
-            label: `${isGoingDone ? "Dokončeno" : "Zrušeno"}: ${labels[step]}`,
-            timestamp: Date.now(),
-          };
-          return {
-            ...v,
-            [step]: !v[step],
-            history: [newEntry, ...(v.history || [])],
-          };
-        }
-        return v;
-      }),
-    );
-  };
+  const toggleVideoStep = useCallback(
+    (id: string, step: "isDubbing" | "isSubtitles" | "isPublished") => {
+      setVideos((prev) =>
+        prev.map((v) => {
+          if (v.id === id) {
+            const isGoingDone = !v[step];
+            const labels = {
+              isDubbing: "Dabing",
+              isSubtitles: "Titulky",
+              isPublished: "Publikováno",
+            };
+            const newEntry = {
+              label: `${isGoingDone ? "Dokončeno" : "Zrušeno"}: ${labels[step]}`,
+              timestamp: Date.now(),
+            };
+            return {
+              ...v,
+              [step]: !v[step],
+              history: [newEntry, ...(v.history || [])],
+            };
+          }
+          return v;
+        }),
+      );
+    },
+    [],
+  );
 
-  const bulkUpdateStatus = (
-    action: "reset" | "isDubbing" | "isSubtitles" | "isPublished",
-  ) => {
-    if (selectedIds.length === 0) return;
-    setVideos(
-      videos.map((v) => {
-        if (!selectedIds.includes(v.id)) return v;
+  const bulkUpdateStatus = useCallback(
+    (action: "reset" | "isDubbing" | "isSubtitles" | "isPublished") => {
+      setSelectedIds((prevSelected) => {
+        if (prevSelected.length === 0) return prevSelected;
+        setVideos((prevVideos) =>
+          prevVideos.map((v) => {
+            if (!prevSelected.includes(v.id)) return v;
 
-        const labels = {
-          isDubbing: "Dabing",
-          isSubtitles: "Titulky",
-          isPublished: "Publikováno",
-        };
+            const labels = {
+              isDubbing: "Dabing",
+              isSubtitles: "Titulky",
+              isPublished: "Publikováno",
+            };
 
-        if (action === "reset") {
-          const newEntry = {
-            label: "Reset (Hromadně)",
-            timestamp: Date.now(),
-          };
-          return {
-            ...v,
-            isDubbing: false,
-            isSubtitles: false,
-            isPublished: false,
-            history: [newEntry, ...(v.history || [])],
-          };
-        }
+            if (action === "reset") {
+              const newEntry = {
+                label: "Reset (Hromadně)",
+                timestamp: Date.now(),
+              };
+              return {
+                ...v,
+                isDubbing: false,
+                isSubtitles: false,
+                isPublished: false,
+                history: [newEntry, ...(v.history || [])],
+              };
+            }
 
-        const newEntry = {
-          label: `Dokončeno: ${labels[action]} (Hromadně)`,
-          timestamp: Date.now(),
-        };
-        return {
-          ...v,
-          [action]: true,
-          history: [newEntry, ...(v.history || [])],
-        };
-      }),
-    );
-    setSelectedIds([]);
-  };
+            const newEntry = {
+              label: `Dokončeno: ${labels[action]} (Hromadně)`,
+              timestamp: Date.now(),
+            };
+            return {
+              ...v,
+              [action]: true,
+              history: [newEntry, ...(v.history || [])],
+            };
+          }),
+        );
+        return [];
+      });
+    },
+    [],
+  );
 
-  const bulkDeleteVideos = () => {
-    if (selectedIds.length === 0) return;
-    if (
-      window.confirm(
-        `Opravdu chcete smazat ${selectedIds.length} vybraných videí?`,
-      )
-    ) {
-      setVideos(videos.filter((v) => !selectedIds.includes(v.id)));
-      setSelectedIds([]);
-    }
-  };
+  const bulkDeleteVideos = useCallback(() => {
+    setSelectedIds((prevSelected) => {
+      if (prevSelected.length === 0) return prevSelected;
+      if (
+        window.confirm(
+          `Opravdu chcete smazat ${prevSelected.length} vybraných videí?`,
+        )
+      ) {
+        setVideos((prevVideos) =>
+          prevVideos.filter((v) => !prevSelected.includes(v.id)),
+        );
+        return [];
+      }
+      return prevSelected;
+    });
+  }, []);
 
-  const toggleSelection = (id: string) => {
+  const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
-  };
+  }, []);
 
-  const deleteVideo = (id: string) => {
+  const deleteVideo = useCallback((id: string) => {
     if (window.confirm("Opravdu smazat toto video?")) {
-      setVideos(videos.filter((v) => v.id !== id));
+      setVideos((prev) => prev.filter((v) => v.id !== id));
     }
-  };
+  }, []);
 
-  const updateNotes = (id: string, notes: string) => {
-    setVideos(videos.map((v) => (v.id === id ? { ...v, notes } : v)));
-  };
+  const updateNotes = useCallback((id: string, notes: string) => {
+    setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, notes } : v)));
+  }, []);
 
-  const updateVideoField = (id: string, field: keyof Video, value: any) => {
-    setVideos(
-      videos.map((v) => {
-        if (v.id === id) {
-          return { ...v, [field]: value };
-        }
-        return v;
-      }),
-    );
-  };
+  const updateVideoField = useCallback(
+    (id: string, field: keyof Video, value: any) => {
+      setVideos((prev) =>
+        prev.map((v) => {
+          if (v.id === id) {
+            return { ...v, [field]: value };
+          }
+          return v;
+        }),
+      );
+    },
+    [],
+  );
 
   const exportData = () => {
     const data = JSON.stringify(
@@ -1314,6 +1578,62 @@ function App() {
     );
   };
 
+  const filteredVideos = useMemo(() => {
+    return videos.filter((v) => {
+      const matchesLang = langFilter
+        ? (v.language || "").toLowerCase().includes(langFilter.toLowerCase())
+        : true;
+      const matchesTags = tagFilter
+        ? (v.tags || "").toLowerCase().includes(tagFilter.toLowerCase())
+        : true;
+      const matchesGlobal = globalSearch
+        ? [v.title, v.videoUrl || "", v.notes].some((field) =>
+            field.toLowerCase().includes(globalSearch.toLowerCase()),
+          )
+        : true;
+      return matchesLang && matchesTags && matchesGlobal;
+    });
+  }, [videos, langFilter, tagFilter, globalSearch]);
+
+  const creatorsData = useMemo(() => {
+    return creators.map((creator) => {
+      const allCreatorVideos = videos.filter(
+        (v) => v.creator === creator && v.app === currentApp,
+      );
+      const creatorFilteredVideos = filteredVideos.filter(
+        (v) => v.creator === creator && v.app === currentApp,
+      );
+      const todoVideos = creatorFilteredVideos.filter((v) => !v.isPublished);
+      const doneVideos = creatorFilteredVideos.filter((v) => v.isPublished);
+      const totalPublishedCount = allCreatorVideos.filter(
+        (v) => v.isPublished,
+      ).length;
+
+      const creatorInvoices = invoices.filter(
+        (inv) => inv.creator === creator && inv.app === currentApp,
+      );
+      const paidInvoicesCount = creatorInvoices.filter(
+        (inv) => inv.isPaid,
+      ).length;
+
+      return {
+        creator,
+        allCreatorVideos,
+        filteredVideos: creatorFilteredVideos,
+        todoVideos,
+        doneVideos,
+        totalPublishedCount,
+        creatorInvoices,
+        paidInvoicesCount,
+      };
+    });
+  }, [creators, videos, currentApp, filteredVideos, invoices]);
+
+  const isFiltering = useMemo(
+    () => langFilter !== "" || tagFilter !== "" || globalSearch !== "",
+    [langFilter, tagFilter, globalSearch],
+  );
+
   const handleOpenAddForm = () => {
     setNewVideo({
       title: "",
@@ -1334,14 +1654,12 @@ function App() {
       tagConfigs.some((c) => c.name.toLowerCase() === cleanName)
     )
       return;
-    setTagConfigs([...tagConfigs, { name: cleanName, color: "color-default" }]);
+    setTagConfigs([...tagConfigs, { name: cleanName, color: "#64748b" }]);
   };
 
-  const updateTagColor = (name: string, colorClass: string) => {
+  const updateTagColor = (name: string, color: string) => {
     setTagConfigs(
-      tagConfigs.map((c) =>
-        c.name === name ? { ...c, color: colorClass } : c,
-      ),
+      tagConfigs.map((c) => (c.name === name ? { ...c, color } : c)),
     );
   };
 
@@ -1352,12 +1670,10 @@ function App() {
 
     if (tagConfigs.some((c) => c.name.toLowerCase() === newKey)) return;
 
-    // 1. Update Configs Array (PRESERVES INDEX/ORDER)
     setTagConfigs(
       tagConfigs.map((c) => (c.name === oldName ? { ...c, name: newName } : c)),
     );
 
-    // 2. Update Videos
     setVideos(
       videos.map((v) => {
         const migrate = (str: string) =>
@@ -1905,52 +2221,22 @@ function App() {
               </div>
             </div>
           )}
-          {creators.map((creator, index) => {
-            // All videos for this creator in current app (for correct summary counts)
-            const allCreatorVideos = videos.filter(
-              (v) => v.creator === creator && v.app === currentApp,
-            );
-
-            // Filter videos by tag/lang filters AND global search
-            const filteredVideos = allCreatorVideos.filter((v) => {
-              const matchesLang = langFilter
-                ? (v.language || "")
-                    .toLowerCase()
-                    .includes(langFilter.toLowerCase())
-                : true;
-              const matchesTags = tagFilter
-                ? (v.tags || "").toLowerCase().includes(tagFilter.toLowerCase())
-                : true;
-
-              const matchesGlobal = globalSearch
-                ? [v.title, v.videoUrl || "", v.notes].some((field) =>
-                    field.toLowerCase().includes(globalSearch.toLowerCase()),
-                  )
-                : true;
-
-              return matchesLang && matchesTags && matchesGlobal;
-            });
+          {creatorsData.map((data, index) => {
+            const {
+              creator,
+              allCreatorVideos,
+              filteredVideos: creatorFilteredVideos,
+              todoVideos,
+              doneVideos,
+              totalPublishedCount,
+              creatorInvoices,
+              paidInvoicesCount,
+            } = data;
 
             // If filters are active and no videos match, hide the section
-            const isFiltering =
-              langFilter !== "" || tagFilter !== "" || globalSearch !== "";
-            if (isFiltering && filteredVideos.length === 0) return null;
-
-            const todoVideos = filteredVideos.filter((v) => !v.isPublished);
-            const doneVideos = filteredVideos.filter((v) => v.isPublished);
+            if (isFiltering && creatorFilteredVideos.length === 0) return null;
 
             const isCollapsed = collapsedCreators.includes(creator);
-            const totalPublishedCount = allCreatorVideos.filter(
-              (v) => v.isPublished,
-            ).length;
-
-            const creatorInvoices = invoices.filter(
-              (inv) => inv.creator === creator && inv.app === currentApp,
-            );
-            const paidInvoicesCount = creatorInvoices.filter(
-              (inv) => inv.isPaid,
-            ).length;
-
             const isEditingInSection = allCreatorVideos.some(
               (v) => editingField?.id === v.id,
             );
@@ -1960,7 +2246,6 @@ function App() {
                 key={index}
                 className={`creator-section ${isCollapsed ? "collapsed" : ""} ${isEditingInSection ? "is-editing-section" : ""}`}
               >
-                {" "}
                 <div
                   className="creator-header"
                   onClick={() => toggleCollapse(creator)}
@@ -2022,136 +2307,15 @@ function App() {
                             </p>
                           ) : (
                             <table>
-                              <thead>
-                                <tr>
-                                  <th
-                                    className="col-drag"
-                                    style={{ width: "24px" }}
-                                  ></th>
-                                  <th className="col-select">
-                                    {" "}
-                                    <input
-                                      type="checkbox"
-                                      checked={
-                                        todoVideos.length > 0 &&
-                                        todoVideos.every((v) =>
-                                          selectedIds.includes(v.id),
-                                        )
-                                      }
-                                      onChange={(e) => {
-                                        const ids = todoVideos.map((v) => v.id);
-                                        if (e.target.checked) {
-                                          setSelectedIds((prev) => [
-                                            ...new Set([...prev, ...ids]),
-                                          ]);
-                                        } else {
-                                          setSelectedIds((prev) =>
-                                            prev.filter(
-                                              (id) => !ids.includes(id),
-                                            ),
-                                          );
-                                        }
-                                      }}
-                                    />
-                                  </th>
-                                  {columnOrder.map((key) => {
-                                    const width = columnWidths[key];
-                                    const resizer = (
-                                      <div
-                                        className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
-                                        onMouseDown={(e) =>
-                                          startResizing(key, e)
-                                        }
-                                      />
-                                    );
-
-                                    switch (key) {
-                                      case "title":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-title"
-                                            style={{ width }}
-                                          >
-                                            <span>Název</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "url":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-url"
-                                            style={{ width }}
-                                          >
-                                            <span>Odkaz</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "status":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-status"
-                                            style={{ width }}
-                                          >
-                                            <div className="header-workflow">
-                                              <span className="stage-dubbing">
-                                                Dabing
-                                              </span>
-                                              <ChevronRight
-                                                size={14}
-                                                className="separator"
-                                              />
-                                              <span className="stage-subtitles">
-                                                Titulky
-                                              </span>
-                                              <ChevronRight
-                                                size={14}
-                                                className="separator"
-                                              />
-                                              <span className="stage-published">
-                                                Publikováno
-                                              </span>
-                                            </div>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "lang":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-lang"
-                                            style={{ width }}
-                                          >
-                                            <span>Jazyk</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "tags":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-tags"
-                                            style={{ width }}
-                                          >
-                                            <span>Tagy</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "notes":
-                                        return (
-                                          <th key={key} className="col-notes">
-                                            <span>Poznámky</span>
-                                          </th>
-                                        );
-                                      default:
-                                        return null;
-                                    }
-                                  })}
-                                  <th className="col-actions"></th>
-                                </tr>
-                              </thead>
+                              <TableHeader
+                                videos={todoVideos}
+                                selectedIds={selectedIds}
+                                setSelectedIds={setSelectedIds}
+                                columnOrder={columnOrder}
+                                columnWidths={columnWidths}
+                                isResizing={isResizing}
+                                startResizing={startResizing}
+                              />
                               <SortableContext
                                 items={todoVideos.map((v) => v.id)}
                                 strategy={verticalListSortingStrategy}
@@ -2206,118 +2370,16 @@ function App() {
                         {!collapsedPublished.includes(creator) && (
                           <div className="video-table-container">
                             <table>
-                              <thead>
-                                <tr>
-                                  <th
-                                    className="col-drag"
-                                    style={{ width: "24px" }}
-                                  ></th>
-                                  <th className="col-select">
-                                    {" "}
-                                    <input
-                                      type="checkbox"
-                                      checked={
-                                        doneVideos.length > 0 &&
-                                        doneVideos.every((v) =>
-                                          selectedIds.includes(v.id),
-                                        )
-                                      }
-                                      onChange={(e) => {
-                                        const ids = doneVideos.map((v) => v.id);
-                                        if (e.target.checked) {
-                                          setSelectedIds((prev) => [
-                                            ...new Set([...prev, ...ids]),
-                                          ]);
-                                        } else {
-                                          setSelectedIds((prev) =>
-                                            prev.filter(
-                                              (id) => !ids.includes(id),
-                                            ),
-                                          );
-                                        }
-                                      }}
-                                    />
-                                  </th>
-                                  {columnOrder.map((key) => {
-                                    const width = columnWidths[key];
-                                    const resizer = (
-                                      <div
-                                        className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
-                                        onMouseDown={(e) =>
-                                          startResizing(key, e)
-                                        }
-                                      />
-                                    );
-
-                                    switch (key) {
-                                      case "title":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-title"
-                                            style={{ width }}
-                                          >
-                                            <span>Název</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "url":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-url"
-                                            style={{ width }}
-                                          >
-                                            <span>Odkaz</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "status":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-status"
-                                            style={{ width }}
-                                          >
-                                            <span>Stav</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "lang":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-lang"
-                                            style={{ width }}
-                                          >
-                                            <span>Jazyk</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "tags":
-                                        return (
-                                          <th
-                                            key={key}
-                                            className="col-tags"
-                                            style={{ width }}
-                                          >
-                                            <span>Tagy</span>
-                                            {resizer}
-                                          </th>
-                                        );
-                                      case "notes":
-                                        return (
-                                          <th key={key} className="col-notes">
-                                            <span>Poznámky</span>
-                                          </th>
-                                        );
-                                      default:
-                                        return null;
-                                    }
-                                  })}
-                                  <th className="col-actions"></th>
-                                </tr>
-                              </thead>
+                              <TableHeader
+                                videos={doneVideos}
+                                selectedIds={selectedIds}
+                                setSelectedIds={setSelectedIds}
+                                columnOrder={columnOrder}
+                                columnWidths={columnWidths}
+                                isResizing={isResizing}
+                                startResizing={startResizing}
+                                isPublishedTable
+                              />
                               <SortableContext
                                 items={doneVideos.map((v) => v.id)}
                                 strategy={verticalListSortingStrategy}
@@ -2381,158 +2443,17 @@ function App() {
                           >
                             <Plus size={14} /> Přidat fakturu
                           </button>
-                          {(() => {
-                            const creatorInvoices = invoices
-                              .filter(
-                                (inv) =>
-                                  inv.creator === creator &&
-                                  inv.app === currentApp,
-                              )
-                              .sort(
-                                (a, b) =>
-                                  new Date(b.date).getTime() -
-                                  new Date(a.date).getTime(),
-                              );
-
-                            if (creatorInvoices.length === 0) {
-                              return (
-                                <p className="no-invoices">Žádné faktury.</p>
-                              );
-                            }
-
-                            const currentLimit = invoiceLimits[creator] || 5;
-                            const visibleInvoices = creatorInvoices.slice(
-                              0,
-                              currentLimit,
-                            );
-
-                            return (
-                              <>
-                                <table className="invoices-table">
-                                  <thead>
-                                    <tr>
-                                      <th>Datum</th>
-                                      <th>Stav</th>
-                                      <th style={{ width: "50px" }}></th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {visibleInvoices.map((inv) => (
-                                      <tr key={inv.id}>
-                                        <td>
-                                          <div className="invoice-date-cell">
-                                            <Calendar
-                                              size={14}
-                                              className="field-icon"
-                                            />
-                                            <div
-                                              className="invoice-date-wrapper"
-                                              onClick={(e) => {
-                                                const input =
-                                                  e.currentTarget.querySelector(
-                                                    "input",
-                                                  );
-                                                if (
-                                                  input &&
-                                                  "showPicker" in input
-                                                ) {
-                                                  try {
-                                                    (input as any).showPicker();
-                                                  } catch (err) {
-                                                    input.focus();
-                                                  }
-                                                }
-                                              }}
-                                            >
-                                              <span className="invoice-date-display">
-                                                {formatDate(inv.date)}
-                                              </span>
-                                              <input
-                                                type="date"
-                                                className="invoice-date-input"
-                                                value={inv.date}
-                                                onChange={(e) =>
-                                                  updateInvoice(
-                                                    inv.id,
-                                                    "date",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                              />
-                                            </div>
-                                          </div>
-                                        </td>{" "}
-                                        <td>
-                                          <div
-                                            className="invoice-status-cycle"
-                                            onClick={() =>
-                                              toggleInvoiceStatus(inv.id)
-                                            }
-                                          >
-                                            {!inv.isReceived && !inv.isPaid && (
-                                              <span className="status-chip empty">
-                                                Žádný stav
-                                              </span>
-                                            )}
-                                            {inv.isReceived && !inv.isPaid && (
-                                              <span className="status-chip active received">
-                                                <Check size={12} /> Přijato
-                                              </span>
-                                            )}
-                                            {inv.isPaid && (
-                                              <span className="status-chip active paid">
-                                                <Check size={12} /> Zaplaceno
-                                              </span>
-                                            )}
-                                          </div>
-                                        </td>
-                                        <td className="col-actions">
-                                          <button
-                                            onClick={() =>
-                                              deleteInvoice(inv.id)
-                                            }
-                                            className="delete-btn"
-                                            title="Smazat fakturu"
-                                          >
-                                            <Trash2 size={14} />
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                                <div className="invoice-pagination-controls">
-                                  {creatorInvoices.length > currentLimit && (
-                                    <button
-                                      className="show-more-invoices"
-                                      onClick={() =>
-                                        setInvoiceLimits((prev) => ({
-                                          ...prev,
-                                          [creator]: currentLimit + 5,
-                                        }))
-                                      }
-                                    >
-                                      Zobrazit dalších 5 (zbývá{" "}
-                                      {creatorInvoices.length - currentLimit})
-                                    </button>
-                                  )}
-                                  {currentLimit > 5 && (
-                                    <button
-                                      className="show-more-invoices secondary"
-                                      onClick={() =>
-                                        setInvoiceLimits((prev) => ({
-                                          ...prev,
-                                          [creator]: 5,
-                                        }))
-                                      }
-                                    >
-                                      Zobrazit méně
-                                    </button>
-                                  )}
-                                </div>
-                              </>
-                            );
-                          })()}
+                          <InvoiceTable
+                            creator={creator}
+                            currentApp={currentApp}
+                            invoices={invoices}
+                            invoiceLimits={invoiceLimits}
+                            setInvoiceLimits={setInvoiceLimits}
+                            updateInvoice={updateInvoice}
+                            toggleInvoiceStatus={toggleInvoiceStatus}
+                            deleteInvoice={deleteInvoice}
+                            formatDate={formatDate}
+                          />
                         </div>
                       )}
                     </div>

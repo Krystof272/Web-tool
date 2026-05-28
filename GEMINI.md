@@ -10,32 +10,31 @@ Tento projekt je webový nástroj pro sledování produkce UGC (User Generated C
 
 ## Hlavní Funkce
 
-- **Workflow (Tabulkový layout):** Videa jsou zobrazena v řádcích s interaktivním postupem (Dabing, Titulky, Pub). Tyto stavy jsou nezávislé a lze je zaškrtávat libovolně v jakémkoli pořadí.
-- **Organizace:** Seskupování videí podle tvůrců. Nově lze neomezeně přidávat, přejmenovávat a mazat aplikace (karty).
+- **Workflow (Tabulkový layout):** Videa jsou zobrazena v řádcích s interaktivním postupem (Dabing, Titulky, Pub).
+- **Zjednodušená sekce Publikováno:** V sekci "Publikovaná videa" se pro větší přehlednost zobrazuje pouze výsledný stav "Publikováno", zatímco pomocné stavy (Dabing, Titulky) jsou skryty.
+- **Historie Produkce:** Každé video automaticky sleduje svůj životní cyklus. Ikonka hodin u každého řádku zobrazuje chronologický log událostí (vytvoření, změny stavů, hromadné akce).
+- **Organizace:** Seskupování videí podle tvůrců. Neomezené přidávání, přejmenovávání a mazání aplikací (karet).
 - **Hromadné akce:** Podpora multi-výběru videí (checkboxy) s plovoucí lištou pro hromadnou změnu stavu nebo smazání.
-- **Sbalitelné sekce:** Možnost sbalit sekci tvůrce s rychlým souhrnem progresu (zobrazuje reálný stav i při aktivních filtrech). Vždy viditelní tvůrci i bez videí.
-- **Správa Tvůrců, Aplikací a Tagů:** Centrální okna pro správu seznamu tvůrců, aplikací (s migrací dat) a pokročilé barvení tagů.
-- **Chytré barvení tagů:** Možnost přiřadit libovolnou HEX barvu tagům a jazykům pomocí profesionálního "Studio" color pickeru s pipetou a 18 presety. Logika používá inteligentní shodu celých slov (word boundaries), aby se předešlo chybným shodu (např. jazyk "en" už neovlivňuje slovo "recenze").
-- **Dynamický výběr tagů:** Přiřazování tagů probíhá interaktivním přesouváním mezi seznamy "K výběru" a "Vybrané". Toto řešení eliminuje ruční psaní a chyby.
-- **Správa faktur s paginací:** Faktury jsou řazeny od nejnovějších a zobrazují se po 5 kusech. Tlačítko "Zobrazit dalších 5" umožňuje postupné načítání historie, čímž UI zůstává přehledné i při velkém množství dat.
-- **Rozbalovací správa:** Výběr barev v Tag Manageru je defaultně skrytý a rozbalí se až po kliknutí na konkrétní tag, což zajišťuje maximální přehlednost.
-- **Poznámky:** Pole pro poznámky zobrazuje náhled na první 2 řádky s automatickou trojtečkou (...). Po kliknutí se rozbalí do editoru, který se vznáší nad tabulkou (absolute positioning) a nezpůsobuje posouvání okolních řádků.
-- **Optimalizace pro velké displeje:** UI využívá 95 % šířky obrazovky, což poskytuje maximální pracovní plochu na širokoúhlých monitorech.
-- **Auto-zavírání:** Všechna kontextová okna (výběr tagů, editor poznámek) se automaticky zavřou při kliknutí kamkoliv mimo daný prvek.
-
-## Instalace a Spuštění
-... rest of section ...
+- **Sbalitelné sekce:** Možnost sbalit sekci tvůrce s rychlým souhrnem progresu. Vždy viditelní tvůrci i bez videí.
+- **Správa Tvůrců, Aplikací a Tagů:** Centrální okna pro správu seznamu tvůrců, aplikací a pokročilé barvení tagů.
+- **Chytré barvení tagů:** HEX barvy pro tagy a jazyky s inteligentní shodou celých slov (word boundaries).
+- **Správa faktur s paginací:** Faktury řazené od nejnovějších s postupným načítáním po 5 kusech.
+- **Poznámky:** Pole pro poznámky s náhledem. Náhled je zarovnán doprava k akčním tlačítkům pro maximální využití prostoru. Editor je kompaktní a otevírá se fixně vlevo.
+- **Optimalizace pro širokoúhlé monitory:** UI využívá 95 % šířky obrazovky.
 
 ## Vývojové Konvence
 
-- **Vzhled:** Čisté CSS (`src/index.css`) v tmavém režimu. Kompaktní, sticky záhlaví. Název videa a URL odkaz jsou rozděleny do samostatných sloupců pro lepší přehlednost.
-- **Stabilitu UI:** Fixní šířky sloupců (Jazyk: 140px, Tagy: 200px, URL: 200px) s možností plynulé změny šířky pomocí viditelných posuvníků (resizerů) s limitem 700px. Sloupec poznámek je flexibilní a automaticky vyplňuje zbývající prostor vpravo, čímž eliminuje prázdná místa i na širokých monitorech.
-- **Data:** Tagy jsou ukládány v poli (Array) pro zachování pořadí. Program obsahuje migrační vrstvu pro bezpečné nahrávání starších záloh (Object format).
-- **Stav:** Aplikace využívá React `useState`, `useEffect` a `useRef` pro synchronizaci stavu a detekci kliknutí mimo prvky. Editační okna využívají dynamický `z-index` a třídy `.is-editing-row`, aby byla vždy navrchu bez ořezávání hranou tabulky.
-
-## Struktura souborů
-... rest of section ...
+- **Architektura:** Komponenty jsou dekomponovány na menší, memoizované celky (`SortableRow`, `TableHeader`, `InvoiceTable`) pro maximální výkon při velkém množství dat.
+- **Performance:** Využití `React.memo`, `useMemo` (pro filtrování a seskupování dat) a `useCallback` (pro event handlery) k zamezení zbytečných re-renderů.
+- **UI Stabilita:** Fixní šířky klíčových sloupců s možností resizingu. Sloupec poznámek je flexibilní a vyplňuje zbývající prostor.
+- **Z-Index Management:** Přísná hierarchie vrstev (Header: 1000, Popovery/Editory: 750-900, Modály: 2000), aby prvky při skrolování správně mizely pod hlavičkou.
+- **Data:** Historie změn je ukládána v poli `history` přímo v objektu `Video`. Program obsahuje migrační vrstvu pro starší formáty dat.
 
 ## Stav Projektu
 
-- **Květen 2026 (Aktualizace):** Dokončena komplexní optimalizace workflow. Implementován samostatný sloupec pro URL s vlastním posuvníkem, vylepšena viditelnost resizerů a optimalizováno zobrazení poznámek. Editační okno poznámek je nyní větší (350x180px), ukotvené vpravo a díky vylepšenému stacking contextu se vždy zobrazuje nad všemi ostatními prvky tabulky. UI je plně stabilní a využívá 80–95 % šířky obrazovky bez layout shiftů. Projekt úspěšně prochází build procesem (`npm run build`).
+- **Květen 2026 (Optimalizace a Historie):**
+  - Implementována **Historie produkce** s automatickým logováním změn.
+  - Proveden **komplexní refaktoring** a optimalizace výkonu (memoizace komponent, stabilizace handlerů).
+  - UI vylepšeno o **95% šířku zobrazení** a lepší zarovnání poznámek k akčním tlačítkům.
+  - Zjednodušeno zobrazení v sekci publikovaných videí.
+  - Projekt úspěšně prochází build procesem a je plně stabilní.
