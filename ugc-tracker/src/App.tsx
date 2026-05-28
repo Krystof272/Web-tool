@@ -227,19 +227,15 @@ const SortableRow = ({
               <td key={key} className="col-status" style={{ width }}>
                 <div className="table-checklist">
                   {[
-                    {
-                      key: "isDubbing",
-                      label: "Dabing",
-                    },
-                    {
-                      key: "isSubtitles",
-                      label: "Titulky",
-                    },
-                    {
-                      key: "isPublished",
-                      label: "Pub",
-                    },
-                  ].map((step) => {
+                    { key: "isDubbing", label: "Dabing" },
+                    { key: "isSubtitles", label: "Titulky" },
+                    { key: "isPublished", label: "Publikováno" },
+                  ]
+                    .filter(
+                      (step) =>
+                        !video.isPublished || step.key === "isPublished",
+                    )
+                    .map((step) => {
                     const isDone = video[step.key as keyof Video] as boolean;
                     return (
                       <div
@@ -503,7 +499,7 @@ function App() {
       .reduce((sum, [_, w]) => sum + w, 0);
 
     // Rezerva pro flexibilní sloupec "Poznámky", aby nezmizel (min 180px)
-    const minNotesWidth = 220;
+    const minNotesWidth = 280;
 
     // x představuje limit, kam až můžeme sloupec rozšířit
     const x =
@@ -1832,15 +1828,17 @@ function App() {
                 : true;
 
               const matchesGlobal = globalSearch
-                ? [v.title, v.videoUrl || "", v.notes]
-                    .some(field => field.toLowerCase().includes(globalSearch.toLowerCase()))
+                ? [v.title, v.videoUrl || "", v.notes].some((field) =>
+                    field.toLowerCase().includes(globalSearch.toLowerCase()),
+                  )
                 : true;
 
               return matchesLang && matchesTags && matchesGlobal;
             });
 
             // If filters are active and no videos match, hide the section
-            const isFiltering = langFilter !== "" || tagFilter !== "" || globalSearch !== "";
+            const isFiltering =
+              langFilter !== "" || tagFilter !== "" || globalSearch !== "";
             if (isFiltering && filteredVideos.length === 0) return null;
 
             const todoVideos = filteredVideos.filter((v) => !v.isPublished);
