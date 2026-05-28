@@ -537,8 +537,8 @@ function App() {
     // Maximální šířka, kterou má tabulka k dispozici (vnitřní šířka šedého boxu)
     const containerWidth = appRef.current.clientWidth - 64; // 64px je padding (2rem + 2rem)
 
-    // Šířka fixních sloupců, které nejsou v columnWidths (Select: 40px, Actions: 150px) + rezerva na bordery (cca 10px)
-    const staticColumnsWidth = 40 + 150 + 10;
+    // Šířka fixních sloupců, které nejsou v columnWidths (Select: 30px, Actions: 80px) + rezerva na bordery (cca 10px)
+    const staticColumnsWidth = 30 + 80 + 10;
 
     // Součet šířek všech ostatních dynamických sloupců (kromě toho co měníme a kromě poznámek)
     const otherColumnsSum = Object.entries(columnWidths)
@@ -555,8 +555,8 @@ function App() {
     const deltaX = e.clientX - startX;
     const requestedWidth = startWidth + deltaX;
 
-    // Výsledná šířka s ohledem na limit x, minimální 80px a maximální 700px
-    const newWidth = Math.min(700, Math.max(80, Math.min(requestedWidth, x)));
+    // Výsledná šířka s ohledem na limit x, minimální 90px a maximální 700px
+    const newWidth = Math.min(700, Math.max(90, Math.min(requestedWidth, x)));
 
     setColumnWidths((prev) => ({ ...prev, [key]: newWidth }));
   };

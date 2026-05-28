@@ -653,23 +653,28 @@ th span {
   white-space: nowrap;
 }
 
-td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.col-notes, .col-actions {
+.col-notes {
+  padding-right: 0 !important;
   overflow: visible !important;
 }
 
 .col-select {
-  width: 40px !important;
+  width: 30px !important;
 }
 
 .col-actions {
-  width: 70px !important;
+  width: 50px !important;
   text-align: center;
+  padding-left: 0 !important;
+  padding-right: 4px !important;
+  overflow: visible !important;
+}
+
+.action-buttons-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-start; /* Flush to the left, towards the notes */
 }
 
 .col-drag {
@@ -995,10 +1000,12 @@ table {
 .table-notes-container {
   display: flex;
   align-items: flex-start;
-  gap: 0.4rem;
+  justify-content: flex-end; /* Align content to the right */
+  gap: 0;
   height: 38px; /* Fixed height to prevent row jumping */
   padding: 2px 0;
   position: relative;
+  width: 100%;
 }
 
 .notes-preview {
@@ -1006,7 +1013,7 @@ table {
   color: var(--text-muted);
   line-height: 17px;
   cursor: text;
-  padding: 4px 6px;
+  padding: 4px 0; /* No side padding to touch actions */
   width: 100%;
   box-sizing: border-box;
   white-space: normal !important;
