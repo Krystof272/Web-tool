@@ -107,6 +107,7 @@ function App() {
   } | null>(null);
 
   const selectorRef = useRef<HTMLDivElement>(null);
+  const appRef = useRef<HTMLDivElement>(null);
   const resizingRef = useRef<{
     key: ColumnKey;
     startX: number;
@@ -127,11 +128,33 @@ function App() {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!resizingRef.current) return;
+    if (!resizingRef.current || !appRef.current) return;
     const { key, startX, startWidth } = resizingRef.current;
+
+    // Maximální šířka, kterou má tabulka k dispozici (vnitřní šířka šedého boxu)
+    const containerWidth = appRef.current.clientWidth - 64; // 64px je padding (2rem + 2rem)
+
+    // Šířka fixních sloupců, které nejsou v columnWidths (Select: 40px, Actions: 30px) + rezerva na bordery (cca 10px)
+    const staticColumnsWidth = 40 + 30 + 10;
+
+    // Součet šířek všech ostatních dynamických sloupců (kromě toho co měníme a kromě poznámek)
+    const otherColumnsSum = Object.entries(columnWidths)
+      .filter(([k]) => k !== key && k !== "notes")
+      .reduce((sum, [_, w]) => sum + w, 0);
+
+    // Rezerva pro flexibilní sloupec "Poznámky", aby nezmizel (min 180px)
+    const minNotesWidth = 180;
+
+    // x představuje limit, kam až můžeme sloupec rozšířit
+    const x =
+      containerWidth - staticColumnsWidth - otherColumnsSum - minNotesWidth;
+
     const deltaX = e.clientX - startX;
-    // Set min 80px and max 700px for all columns
-    const newWidth = Math.min(700, Math.max(80, startWidth + deltaX));
+    const requestedWidth = startWidth + deltaX;
+
+    // Výsledná šířka s ohledem na limit x, minimální 80px a maximální 700px
+    const newWidth = Math.min(700, Math.max(80, Math.min(requestedWidth, x)));
+
     setColumnWidths((prev) => ({ ...prev, [key]: newWidth }));
   };
 
@@ -937,7 +960,7 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-container" ref={appRef}>
       <header>
         <div className="header-row top-row">
           <div className="app-title">
@@ -1345,24 +1368,6 @@ function App() {
               }
             />
 
-            <div className="form-section">
-              <label className="form-label">Jazyk</label>
-              {renderTagSelector(
-                newVideo.language,
-                (val) => setNewVideo({ ...newVideo, language: val }),
-                "lang",
-              )}
-            </div>
-
-            <div className="form-section">
-              <label className="form-label">Tagy</label>
-              {renderTagSelector(
-                newVideo.tags,
-                (val) => setNewVideo({ ...newVideo, tags: val }),
-                "other",
-              )}
-            </div>
-
             <textarea
               placeholder="Poznámky"
               value={newVideo.notes}
@@ -1472,7 +1477,9 @@ function App() {
             <section
               key={index}
               className={`creator-section ${isCollapsed ? "collapsed" : ""} ${isEditingInSection ? "is-editing-section" : ""}`}
-            >              <div
+            >
+              {" "}
+              <div
                 className="creator-header"
                 onClick={() => toggleCollapse(creator)}
               >
@@ -1503,7 +1510,6 @@ function App() {
                   </div>
                 )}
               </div>
-
               {!isCollapsed && (
                 <>
                   <div className="section-group">

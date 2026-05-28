@@ -955,7 +955,7 @@ td {
 .notes-preview {
   font-size: 0.75rem;
   color: var(--text-muted);
-  line-height: 130%;
+  line-height: 17px;
   cursor: text;
   padding: 4px 6px;
   width: 100%;
