@@ -16,7 +16,25 @@ import {
   Sun,
   Moon,
   Pipette,
+  GripVertical,
+  Search,
 } from "lucide-react";
+
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 const STORAGE_KEY = "ugc_tracker_data";
 const THEME_KEY = "ugc_tracker_theme";
 
@@ -72,6 +90,328 @@ const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
   notes: 180,
 };
 
+const SortableRow = ({
+  video,
+  selectedIds,
+  toggleSelection,
+  columnOrder,
+  columnWidths,
+  updateVideoField,
+  editingField,
+  setEditingField,
+  showToast,
+  deleteVideo,
+  updateNotes,
+  toggleVideoStep,
+  renderTagSelector,
+  getTagStyle,
+  selectorRef,
+}: {
+  video: Video;
+  selectedIds: string[];
+  toggleSelection: (id: string) => void;
+  columnOrder: ColumnKey[];
+  columnWidths: ColumnWidths;
+  updateVideoField: (id: string, field: keyof Video, value: any) => void;
+  editingField: any;
+  setEditingField: (val: any) => void;
+  showToast: (m: string, s?: string) => void;
+  deleteVideo: (id: string) => void;
+  updateNotes: (id: string, n: string) => void;
+  toggleVideoStep: (id: string, step: any) => void;
+  renderTagSelector: any;
+  getTagStyle: any;
+  selectorRef: any;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: video.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 9999 : 1,
+    opacity: isDragging ? 0.6 : 1,
+    background: isDragging ? "var(--table-hover)" : undefined,
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={editingField?.id === video.id ? "is-editing-row" : ""}
+      {...attributes}
+    >
+      <td
+        className="col-drag"
+        {...listeners}
+        style={{ cursor: "grab", width: "24px", textAlign: "center" }}
+      >
+        <GripVertical size={14} style={{ opacity: 0.3 }} />
+      </td>
+      <td className="col-select">
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(video.id)}
+          onChange={() => toggleSelection(video.id)}
+        />
+      </td>
+      {columnOrder.map((key) => {
+        const width = columnWidths[key];
+        switch (key) {
+          case "title":
+            return (
+              <td key={key} className="col-title" style={{ width }}>
+                <div className="title-edit-group">
+                  <input
+                    className="table-editable-field title-field"
+                    value={video.title}
+                    onChange={(e) =>
+                      updateVideoField(video.id, "title", e.target.value)
+                    }
+                  />
+                </div>
+              </td>
+            );
+          case "url":
+            const isEditingUrl =
+              editingField?.id === video.id &&
+              editingField?.field === "videoUrl";
+            return (
+              <td key={key} className="col-url" style={{ width }}>
+                <div
+                  className={`url-edit-wrapper ${isEditingUrl ? "is-editing" : ""}`}
+                >
+                  <input
+                    className="table-editable-field url-field"
+                    placeholder="Vložte odkaz..."
+                    value={video.videoUrl || ""}
+                    onFocus={() =>
+                      setEditingField({
+                        id: video.id,
+                        field: "videoUrl",
+                      })
+                    }
+                    onBlur={() => setEditingField(null)}
+                    onChange={(e) =>
+                      updateVideoField(video.id, "videoUrl", e.target.value)
+                    }
+                  />
+                  {!isEditingUrl && video.videoUrl && (
+                    <button
+                      className="copy-link-btn"
+                      title="Kopírovat cestu"
+                      onClick={() => {
+                        if (video.videoUrl) {
+                          navigator.clipboard.writeText(video.videoUrl);
+                          showToast(
+                            "Cesta zkopírována! 🚀",
+                            "Cmd+Shift+G ve Finderu",
+                          );
+                        }
+                      }}
+                    >
+                      <Copy size={14} />
+                    </button>
+                  )}
+                </div>
+              </td>
+            );
+          case "status":
+            return (
+              <td key={key} className="col-status" style={{ width }}>
+                <div className="table-checklist">
+                  {[
+                    {
+                      key: "isDubbing",
+                      label: "Dabing",
+                    },
+                    {
+                      key: "isSubtitles",
+                      label: "Titulky",
+                    },
+                    {
+                      key: "isPublished",
+                      label: "Pub",
+                    },
+                  ].map((step) => {
+                    const isDone = video[step.key as keyof Video] as boolean;
+                    return (
+                      <div
+                        key={step.key}
+                        className={`table-check-item ${isDone ? "done" : ""} status-${step.key.replace("is", "").toLowerCase()}`}
+                        onClick={() =>
+                          toggleVideoStep(video.id, step.key as any)
+                        }
+                        title={step.label}
+                      >
+                        <Circle
+                          size={16}
+                          fill={isDone ? "currentColor" : "none"}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </td>
+            );
+          case "lang":
+            return (
+              <td
+                key={key}
+                className="col-lang"
+                style={{ width }}
+                onClick={() =>
+                  setEditingField({
+                    id: video.id,
+                    field: "language",
+                  })
+                }
+              >
+                {editingField?.id === video.id &&
+                editingField?.field === "language" ? (
+                  <div className="inline-selector-wrapper" ref={selectorRef}>
+                    {renderTagSelector(
+                      video.language,
+                      (val: string) =>
+                        updateVideoField(video.id, "language", val),
+                      "lang",
+                    )}
+                    <button
+                      className="close-selector-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingField(null);
+                      }}
+                    >
+                      Hotovo
+                    </button>
+                  </div>
+                ) : (
+                  <div className="chips-container">
+                    <Globe size={12} className="url-icon" />
+                    {(video.language || "").split(",").map((l, i) => {
+                      const tag = l.trim();
+                      if (!tag) return null;
+                      const { className, style } = getTagStyle(tag);
+                      return (
+                        <span
+                          key={i}
+                          className={`chip lang-chip ${className}`}
+                          style={style}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </td>
+            );
+          case "tags":
+            return (
+              <td
+                key={key}
+                className="col-tags"
+                style={{ width }}
+                onClick={() =>
+                  setEditingField({
+                    id: video.id,
+                    field: "tags",
+                  })
+                }
+              >
+                {editingField?.id === video.id &&
+                editingField?.field === "tags" ? (
+                  <div className="inline-selector-wrapper" ref={selectorRef}>
+                    {renderTagSelector(
+                      video.tags,
+                      (val: string) => updateVideoField(video.id, "tags", val),
+                      "other",
+                    )}
+                    <button
+                      className="close-selector-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingField(null);
+                      }}
+                    >
+                      Hotovo
+                    </button>
+                  </div>
+                ) : (
+                  <div className="chips-container">
+                    {(video.tags || "").split(",").map((t, i) => {
+                      const tag = t.trim();
+                      if (!tag) return null;
+                      const { className, style } = getTagStyle(tag);
+                      return (
+                        <span
+                          key={i}
+                          className={`chip tag-chip ${className}`}
+                          style={style}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </td>
+            );
+          case "notes":
+            return (
+              <td key={key} className="col-notes" style={{ width }}>
+                <div className="table-notes-container">
+                  {editingField?.id === video.id &&
+                  editingField?.field === "notes" ? (
+                    <textarea
+                      autoFocus
+                      className="table-editable-notes"
+                      placeholder="..."
+                      value={video.notes}
+                      onBlur={() => setEditingField(null)}
+                      onChange={(e) => updateNotes(video.id, e.target.value)}
+                    />
+                  ) : (
+                    <div
+                      className="notes-preview"
+                      onClick={() =>
+                        setEditingField({
+                          id: video.id,
+                          field: "notes",
+                        })
+                      }
+                      title={video.notes}
+                    >
+                      {video.notes || "..."}
+                    </div>
+                  )}
+                </div>
+              </td>
+            );
+          default:
+            return null;
+        }
+      })}
+      <td className="col-actions">
+        <button
+          onClick={() => deleteVideo(video.id)}
+          className="delete-btn"
+          title="Smazat"
+        >
+          <Trash2 size={14} />
+        </button>
+      </td>
+    </tr>
+  );
+};
+
 function App() {
   const [apps, setApps] = useState<string[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -105,6 +445,7 @@ function App() {
     submessage?: string;
     id: number;
   } | null>(null);
+  const [globalSearch, setGlobalSearch] = useState("");
 
   const selectorRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<HTMLDivElement>(null);
@@ -113,6 +454,25 @@ function App() {
     startX: number;
     startWidth: number;
   } | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setVideos((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   // Column Resizing Logic
   const startResizing = (key: ColumnKey, e: React.MouseEvent) => {
@@ -143,7 +503,7 @@ function App() {
       .reduce((sum, [_, w]) => sum + w, 0);
 
     // Rezerva pro flexibilní sloupec "Poznámky", aby nezmizel (min 180px)
-    const minNotesWidth = 180;
+    const minNotesWidth = 220;
 
     // x představuje limit, kam až můžeme sloupec rozšířit
     const x =
@@ -967,6 +1327,24 @@ function App() {
             <h1>UGC Tracker</h1>
           </div>
           <div className="header-actions">
+            <div className="global-search-wrapper">
+              <Search size={16} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Hledat napříč vším..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="global-search-input"
+              />
+              {globalSearch && (
+                <button
+                  className="clear-search"
+                  onClick={() => setGlobalSearch("")}
+                >
+                  ×
+                </button>
+              )}
+            </div>
             <div className="filters">
               <div className="filter-input-wrapper">
                 <Globe size={14} className="filter-icon" />
@@ -1386,636 +1764,154 @@ function App() {
       )}
 
       <main>
-        {selectedIds.length > 0 && (
-          <div className="bulk-actions-bar">
-            <span className="selection-count">
-              Vybráno: {selectedIds.length} videí
-            </span>
-            <div className="bulk-buttons">
-              <button
-                className="bulk-btn ready"
-                onClick={() => bulkUpdateStatus("reset")}
-              >
-                Reset (Ready)
-              </button>
-              <button
-                className="bulk-btn dubbing"
-                onClick={() => bulkUpdateStatus("isDubbing")}
-              >
-                Dabing
-              </button>
-              <button
-                className="bulk-btn subtitles"
-                onClick={() => bulkUpdateStatus("isSubtitles")}
-              >
-                Titulky
-              </button>
-              <button
-                className="bulk-btn published"
-                onClick={() => bulkUpdateStatus("isPublished")}
-              >
-                Publikovat
-              </button>
-              <button
-                className="bulk-btn delete-all"
-                onClick={bulkDeleteVideos}
-              >
-                Smazat vybrané
-              </button>
-              <button
-                className="bulk-btn cancel"
-                onClick={() => setSelectedIds([])}
-              >
-                Zrušit výběr
-              </button>
-            </div>
-          </div>
-        )}
-        {creators.map((creator, index) => {
-          // All videos for this creator in current app (for correct summary counts)
-          const allCreatorVideos = videos.filter(
-            (v) => v.creator === creator && v.app === currentApp,
-          );
-
-          // Filter videos by tag/lang filters for display
-          const filteredVideos = allCreatorVideos.filter((v) => {
-            const matchesLang = langFilter
-              ? (v.language || "")
-                  .toLowerCase()
-                  .includes(langFilter.toLowerCase())
-              : true;
-            const matchesTags = tagFilter
-              ? (v.tags || "").toLowerCase().includes(tagFilter.toLowerCase())
-              : true;
-            return matchesLang && matchesTags;
-          });
-
-          // If filters are active and no videos match, hide the section
-          const isFiltering = langFilter !== "" || tagFilter !== "";
-          if (isFiltering && filteredVideos.length === 0) return null;
-
-          const todoVideos = filteredVideos.filter((v) => !v.isPublished);
-          const doneVideos = filteredVideos.filter((v) => v.isPublished);
-
-          const isCollapsed = collapsedCreators.includes(creator);
-          const totalPublishedCount = allCreatorVideos.filter(
-            (v) => v.isPublished,
-          ).length;
-
-          const creatorInvoices = invoices.filter(
-            (inv) => inv.creator === creator && inv.app === currentApp,
-          );
-          const paidInvoicesCount = creatorInvoices.filter(
-            (inv) => inv.isPaid,
-          ).length;
-
-          const isEditingInSection = allCreatorVideos.some(
-            (v) => editingField?.id === v.id,
-          );
-
-          return (
-            <section
-              key={index}
-              className={`creator-section ${isCollapsed ? "collapsed" : ""} ${isEditingInSection ? "is-editing-section" : ""}`}
-            >
-              {" "}
-              <div
-                className="creator-header"
-                onClick={() => toggleCollapse(creator)}
-              >
-                <div className="creator-title">
-                  {isCollapsed ? (
-                    <ChevronRight size={20} />
-                  ) : (
-                    <ChevronDown size={20} />
-                  )}
-                  <input
-                    className="creator-name-input"
-                    value={creator}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => updateCreatorName(creator, e.target.value)}
-                  />
-                </div>
-                {isCollapsed && (
-                  <div className="creator-summary">
-                    <span className="summary-item">
-                      <Circle size={14} fill="currentColor" />{" "}
-                      {totalPublishedCount}/{allCreatorVideos.length}{" "}
-                      Publikováno
-                    </span>
-                    <span className="summary-item">
-                      <FileText size={14} /> {paidInvoicesCount}/
-                      {creatorInvoices.length} Zaplaceno
-                    </span>
-                  </div>
-                )}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          {selectedIds.length > 0 && (
+            <div className="bulk-actions-bar">
+              <span className="selection-count">
+                Vybráno: {selectedIds.length} videí
+              </span>
+              <div className="bulk-buttons">
+                <button
+                  className="bulk-btn ready"
+                  onClick={() => bulkUpdateStatus("reset")}
+                >
+                  Reset (Ready)
+                </button>
+                <button
+                  className="bulk-btn dubbing"
+                  onClick={() => bulkUpdateStatus("isDubbing")}
+                >
+                  Dabing
+                </button>
+                <button
+                  className="bulk-btn subtitles"
+                  onClick={() => bulkUpdateStatus("isSubtitles")}
+                >
+                  Titulky
+                </button>
+                <button
+                  className="bulk-btn published"
+                  onClick={() => bulkUpdateStatus("isPublished")}
+                >
+                  Publikovat
+                </button>
+                <button
+                  className="bulk-btn delete-all"
+                  onClick={bulkDeleteVideos}
+                >
+                  Smazat vybrané
+                </button>
+                <button
+                  className="bulk-btn cancel"
+                  onClick={() => setSelectedIds([])}
+                >
+                  Zrušit výběr
+                </button>
               </div>
-              {!isCollapsed && (
-                <>
-                  <div className="section-group">
-                    <div
-                      className="section-header"
-                      onClick={() => toggleVideosCollapse(creator)}
-                    >
-                      <div className="section-title">
-                        <Circle size={14} fill="currentColor" />
-                        <span>Nepublikovaná videa</span>
-                        {collapsedVideos.includes(creator) ? (
-                          <ChevronRight size={14} />
-                        ) : (
-                          <ChevronDown size={14} />
-                        )}
-                      </div>
-                    </div>
+            </div>
+          )}
+          {creators.map((creator, index) => {
+            // All videos for this creator in current app (for correct summary counts)
+            const allCreatorVideos = videos.filter(
+              (v) => v.creator === creator && v.app === currentApp,
+            );
 
-                    {!collapsedVideos.includes(creator) && (
-                      <div className="video-table-container">
-                        {todoVideos.length === 0 ? (
-                          <p className="no-videos">
-                            {isFiltering
-                              ? "Žádná nepublikovaná videa nevyhovují filtrům."
-                              : "Všechna videa jsou publikována! 🎉"}
-                          </p>
-                        ) : (
-                          <table>
-                            <thead>
-                              <tr>
-                                <th className="col-select">
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      todoVideos.length > 0 &&
-                                      todoVideos.every((v) =>
-                                        selectedIds.includes(v.id),
-                                      )
-                                    }
-                                    onChange={(e) => {
-                                      const ids = todoVideos.map((v) => v.id);
-                                      if (e.target.checked) {
-                                        setSelectedIds((prev) => [
-                                          ...new Set([...prev, ...ids]),
-                                        ]);
-                                      } else {
-                                        setSelectedIds((prev) =>
-                                          prev.filter(
-                                            (id) => !ids.includes(id),
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </th>
-                                {columnOrder.map((key) => {
-                                  const width = columnWidths[key];
-                                  const resizer = (
-                                    <div
-                                      className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
-                                      onMouseDown={(e) => startResizing(key, e)}
-                                    />
-                                  );
+            // Filter videos by tag/lang filters AND global search
+            const filteredVideos = allCreatorVideos.filter((v) => {
+              const matchesLang = langFilter
+                ? (v.language || "")
+                    .toLowerCase()
+                    .includes(langFilter.toLowerCase())
+                : true;
+              const matchesTags = tagFilter
+                ? (v.tags || "").toLowerCase().includes(tagFilter.toLowerCase())
+                : true;
 
-                                  switch (key) {
-                                    case "title":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-title"
-                                          style={{ width }}
-                                        >
-                                          <span>Název</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "url":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-url"
-                                          style={{ width }}
-                                        >
-                                          <span>Odkaz</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "status":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-status"
-                                          style={{ width }}
-                                        >
-                                          <div className="header-workflow">
-                                            <span className="stage-dubbing">
-                                              Dabing
-                                            </span>
-                                            <ChevronRight
-                                              size={14}
-                                              className="separator"
-                                            />
-                                            <span className="stage-subtitles">
-                                              Titulky
-                                            </span>
-                                            <ChevronRight
-                                              size={14}
-                                              className="separator"
-                                            />
-                                            <span className="stage-published">
-                                              Publikováno
-                                            </span>
-                                          </div>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "lang":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-lang"
-                                          style={{ width }}
-                                        >
-                                          <span>Jazyk</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "tags":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-tags"
-                                          style={{ width }}
-                                        >
-                                          <span>Tagy</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "notes":
-                                      return (
-                                        <th key={key} className="col-notes">
-                                          <span>Poznámky</span>
-                                        </th>
-                                      );
-                                    default:
-                                      return null;
-                                  }
-                                })}
-                                <th className="col-actions"></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {todoVideos.map((video) => (
-                                <tr
-                                  key={video.id}
-                                  className={
-                                    editingField?.id === video.id
-                                      ? "is-editing-row"
-                                      : ""
-                                  }
-                                >
-                                  <td className="col-select">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedIds.includes(video.id)}
-                                      onChange={() => toggleSelection(video.id)}
-                                    />
-                                  </td>
-                                  {columnOrder.map((key) => {
-                                    const width = columnWidths[key];
-                                    switch (key) {
-                                      case "title":
-                                        return (
-                                          <td
-                                            key={key}
-                                            className="col-title"
-                                            style={{ width }}
-                                          >
-                                            <div className="title-edit-group">
-                                              <input
-                                                className="table-editable-field title-field"
-                                                value={video.title}
-                                                onChange={(e) =>
-                                                  updateVideoField(
-                                                    video.id,
-                                                    "title",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                              />
-                                            </div>
-                                          </td>
-                                        );
-                                      case "url":
-                                        const isEditingUrl =
-                                          editingField?.id === video.id &&
-                                          editingField?.field === "videoUrl";
-                                        return (
-                                          <td
-                                            key={key}
-                                            className="col-url"
-                                            style={{ width }}
-                                          >
-                                            <div
-                                              className={`url-edit-wrapper ${isEditingUrl ? "is-editing" : ""}`}
-                                            >
-                                              <input
-                                                className="table-editable-field url-field"
-                                                placeholder="Vložte odkaz..."
-                                                value={video.videoUrl || ""}
-                                                onFocus={() =>
-                                                  setEditingField({
-                                                    id: video.id,
-                                                    field: "videoUrl",
-                                                  })
-                                                }
-                                                onBlur={() =>
-                                                  setEditingField(null)
-                                                }
-                                                onChange={(e) =>
-                                                  updateVideoField(
-                                                    video.id,
-                                                    "videoUrl",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                              />
-                                              {!isEditingUrl &&
-                                                video.videoUrl && (
-                                                  <button
-                                                    className="copy-link-btn"
-                                                    title="Kopírovat cestu"
-                                                    onClick={() => {
-                                                      if (video.videoUrl) {
-                                                        navigator.clipboard.writeText(
-                                                          video.videoUrl,
-                                                        );
-                                                        showToast(
-                                                          "Cesta zkopírována! 🚀",
-                                                          "Cmd+Shift+G ve Finderu",
-                                                        );
-                                                      }
-                                                    }}
-                                                  >
-                                                    <Copy size={14} />
-                                                  </button>
-                                                )}
-                                            </div>
-                                          </td>
-                                        );
-                                      case "status":
-                                        return (
-                                          <td
-                                            key={key}
-                                            className="col-status"
-                                            style={{ width }}
-                                          >
-                                            <div className="table-checklist">
-                                              {[
-                                                {
-                                                  key: "isDubbing",
-                                                  label: "Dabing",
-                                                },
-                                                {
-                                                  key: "isSubtitles",
-                                                  label: "Titulky",
-                                                },
-                                                {
-                                                  key: "isPublished",
-                                                  label: "Pub",
-                                                },
-                                              ].map((step) => {
-                                                const isDone = video[
-                                                  step.key as keyof Video
-                                                ] as boolean;
-                                                return (
-                                                  <div
-                                                    key={step.key}
-                                                    className={`table-check-item ${isDone ? "done" : ""} status-${step.key.replace("is", "").toLowerCase()}`}
-                                                    onClick={() =>
-                                                      toggleVideoStep(
-                                                        video.id,
-                                                        step.key as any,
-                                                      )
-                                                    }
-                                                    title={step.label}
-                                                  >
-                                                    <Circle
-                                                      size={16}
-                                                      fill={
-                                                        isDone
-                                                          ? "currentColor"
-                                                          : "none"
-                                                      }
-                                                    />
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          </td>
-                                        );
-                                      case "lang":
-                                        return (
-                                          <td
-                                            key={key}
-                                            className="col-lang"
-                                            style={{ width }}
-                                            onClick={() =>
-                                              setEditingField({
-                                                id: video.id,
-                                                field: "language",
-                                              })
-                                            }
-                                          >
-                                            {editingField?.id === video.id &&
-                                            editingField?.field ===
-                                              "language" ? (
-                                              <div
-                                                className="inline-selector-wrapper"
-                                                ref={selectorRef}
-                                              >
-                                                {renderTagSelector(
-                                                  video.language,
-                                                  (val) =>
-                                                    updateVideoField(
-                                                      video.id,
-                                                      "language",
-                                                      val,
-                                                    ),
-                                                  "lang",
-                                                )}
-                                                <button
-                                                  className="close-selector-btn"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEditingField(null);
-                                                  }}
-                                                >
-                                                  Hotovo
-                                                </button>
-                                              </div>
-                                            ) : (
-                                              <div className="chips-container">
-                                                <Globe
-                                                  size={12}
-                                                  className="url-icon"
-                                                />
-                                                {(video.language || "")
-                                                  .split(",")
-                                                  .map((l, i) => {
-                                                    const tag = l.trim();
-                                                    if (!tag) return null;
-                                                    const { className, style } =
-                                                      getTagStyle(tag);
-                                                    return (
-                                                      <span
-                                                        key={i}
-                                                        className={`chip lang-chip ${className}`}
-                                                        style={style}
-                                                      >
-                                                        {tag}
-                                                      </span>
-                                                    );
-                                                  })}
-                                              </div>
-                                            )}
-                                          </td>
-                                        );
-                                      case "tags":
-                                        return (
-                                          <td
-                                            key={key}
-                                            className="col-tags"
-                                            style={{ width }}
-                                            onClick={() =>
-                                              setEditingField({
-                                                id: video.id,
-                                                field: "tags",
-                                              })
-                                            }
-                                          >
-                                            {editingField?.id === video.id &&
-                                            editingField?.field === "tags" ? (
-                                              <div
-                                                className="inline-selector-wrapper"
-                                                ref={selectorRef}
-                                              >
-                                                {renderTagSelector(
-                                                  video.tags,
-                                                  (val) =>
-                                                    updateVideoField(
-                                                      video.id,
-                                                      "tags",
-                                                      val,
-                                                    ),
-                                                  "other",
-                                                )}
-                                                <button
-                                                  className="close-selector-btn"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEditingField(null);
-                                                  }}
-                                                >
-                                                  Hotovo
-                                                </button>
-                                              </div>
-                                            ) : (
-                                              <div className="chips-container">
-                                                {(video.tags || "")
-                                                  .split(",")
-                                                  .map((t, i) => {
-                                                    const tag = t.trim();
-                                                    if (!tag) return null;
-                                                    const { className, style } =
-                                                      getTagStyle(tag);
-                                                    return (
-                                                      <span
-                                                        key={i}
-                                                        className={`chip tag-chip ${className}`}
-                                                        style={style}
-                                                      >
-                                                        {tag}
-                                                      </span>
-                                                    );
-                                                  })}
-                                              </div>
-                                            )}
-                                          </td>
-                                        );
-                                      case "notes":
-                                        return (
-                                          <td
-                                            key={key}
-                                            className="col-notes"
-                                            style={{ width }}
-                                          >
-                                            <div className="table-notes-container">
-                                              {editingField?.id === video.id &&
-                                              editingField?.field ===
-                                                "notes" ? (
-                                                <textarea
-                                                  autoFocus
-                                                  className="table-editable-notes"
-                                                  placeholder="..."
-                                                  value={video.notes}
-                                                  onBlur={() =>
-                                                    setEditingField(null)
-                                                  }
-                                                  onChange={(e) =>
-                                                    updateNotes(
-                                                      video.id,
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                />
-                                              ) : (
-                                                <div
-                                                  className="notes-preview"
-                                                  onClick={() =>
-                                                    setEditingField({
-                                                      id: video.id,
-                                                      field: "notes",
-                                                    })
-                                                  }
-                                                  title={video.notes}
-                                                >
-                                                  {video.notes || "..."}
-                                                </div>
-                                              )}
-                                            </div>
-                                          </td>
-                                        );
-                                      default:
-                                        return null;
-                                    }
-                                  })}
-                                  <td className="col-actions">
-                                    <button
-                                      onClick={() => deleteVideo(video.id)}
-                                      className="delete-btn"
-                                      title="Smazat"
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
+              const matchesGlobal = globalSearch
+                ? [v.title, v.videoUrl || "", v.notes]
+                    .some(field => field.toLowerCase().includes(globalSearch.toLowerCase()))
+                : true;
+
+              return matchesLang && matchesTags && matchesGlobal;
+            });
+
+            // If filters are active and no videos match, hide the section
+            const isFiltering = langFilter !== "" || tagFilter !== "" || globalSearch !== "";
+            if (isFiltering && filteredVideos.length === 0) return null;
+
+            const todoVideos = filteredVideos.filter((v) => !v.isPublished);
+            const doneVideos = filteredVideos.filter((v) => v.isPublished);
+
+            const isCollapsed = collapsedCreators.includes(creator);
+            const totalPublishedCount = allCreatorVideos.filter(
+              (v) => v.isPublished,
+            ).length;
+
+            const creatorInvoices = invoices.filter(
+              (inv) => inv.creator === creator && inv.app === currentApp,
+            );
+            const paidInvoicesCount = creatorInvoices.filter(
+              (inv) => inv.isPaid,
+            ).length;
+
+            const isEditingInSection = allCreatorVideos.some(
+              (v) => editingField?.id === v.id,
+            );
+
+            return (
+              <section
+                key={index}
+                className={`creator-section ${isCollapsed ? "collapsed" : ""} ${isEditingInSection ? "is-editing-section" : ""}`}
+              >
+                {" "}
+                <div
+                  className="creator-header"
+                  onClick={() => toggleCollapse(creator)}
+                >
+                  <div className="creator-title">
+                    {isCollapsed ? (
+                      <ChevronRight size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
                     )}
+                    <input
+                      className="creator-name-input"
+                      value={creator}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateCreatorName(creator, e.target.value)
+                      }
+                    />
                   </div>
-
-                  {/* Published Videos Section */}
-                  {doneVideos.length > 0 && (
-                    <div className="section-group published-section">
+                  {isCollapsed && (
+                    <div className="creator-summary">
+                      <span className="summary-item">
+                        <Circle size={14} fill="currentColor" />{" "}
+                        {totalPublishedCount}/{allCreatorVideos.length}{" "}
+                        Publikováno
+                      </span>
+                      <span className="summary-item">
+                        <FileText size={14} /> {paidInvoicesCount}/
+                        {creatorInvoices.length} Zaplaceno
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {!isCollapsed && (
+                  <>
+                    <div className="section-group">
                       <div
                         className="section-header"
-                        onClick={() => togglePublishedCollapse(creator)}
+                        onClick={() => toggleVideosCollapse(creator)}
                       >
                         <div className="section-title">
-                          <Circle size={14} fill="#10b981" />
-                          <span>Publikovaná videa</span>
-                          {collapsedPublished.includes(creator) ? (
+                          <Circle size={14} fill="currentColor" />
+                          <span>Nepublikovaná videa</span>
+                          {collapsedVideos.includes(creator) ? (
                             <ChevronRight size={14} />
                           ) : (
                             <ChevronDown size={14} />
@@ -2023,626 +1919,542 @@ function App() {
                         </div>
                       </div>
 
-                      {!collapsedPublished.includes(creator) && (
+                      {!collapsedVideos.includes(creator) && (
                         <div className="video-table-container">
-                          <table>
-                            <thead>
-                              <tr>
-                                <th className="col-select">
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      doneVideos.length > 0 &&
-                                      doneVideos.every((v) =>
-                                        selectedIds.includes(v.id),
-                                      )
-                                    }
-                                    onChange={(e) => {
-                                      const ids = doneVideos.map((v) => v.id);
-                                      if (e.target.checked) {
-                                        setSelectedIds((prev) => [
-                                          ...new Set([...prev, ...ids]),
-                                        ]);
-                                      } else {
-                                        setSelectedIds((prev) =>
-                                          prev.filter(
-                                            (id) => !ids.includes(id),
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </th>
-                                {columnOrder.map((key) => {
-                                  const width = columnWidths[key];
-                                  const resizer = (
-                                    <div
-                                      className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
-                                      onMouseDown={(e) => startResizing(key, e)}
-                                    />
-                                  );
-
-                                  switch (key) {
-                                    case "title":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-title"
-                                          style={{ width }}
-                                        >
-                                          <span>Název</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "url":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-url"
-                                          style={{ width }}
-                                        >
-                                          <span>Odkaz</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "status":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-status"
-                                          style={{ width }}
-                                        >
-                                          <span>Stav</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "lang":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-lang"
-                                          style={{ width }}
-                                        >
-                                          <span>Jazyk</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "tags":
-                                      return (
-                                        <th
-                                          key={key}
-                                          className="col-tags"
-                                          style={{ width }}
-                                        >
-                                          <span>Tagy</span>
-                                          {resizer}
-                                        </th>
-                                      );
-                                    case "notes":
-                                      return (
-                                        <th key={key} className="col-notes">
-                                          <span>Poznámky</span>
-                                        </th>
-                                      );
-                                    default:
-                                      return null;
-                                  }
-                                })}
-                                <th className="col-actions"></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {doneVideos.map((video) => (
-                                <tr
-                                  key={video.id}
-                                  className={
-                                    editingField?.id === video.id
-                                      ? "is-editing-row"
-                                      : ""
-                                  }
-                                >
-                                  <td className="col-select">
+                          {todoVideos.length === 0 ? (
+                            <p className="no-videos">
+                              {isFiltering
+                                ? "Žádná nepublikovaná videa nevyhovují filtrům."
+                                : "Všechna videa jsou publikována! 🎉"}
+                            </p>
+                          ) : (
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th
+                                    className="col-drag"
+                                    style={{ width: "24px" }}
+                                  ></th>
+                                  <th className="col-select">
+                                    {" "}
                                     <input
                                       type="checkbox"
-                                      checked={selectedIds.includes(video.id)}
-                                      onChange={() => toggleSelection(video.id)}
+                                      checked={
+                                        todoVideos.length > 0 &&
+                                        todoVideos.every((v) =>
+                                          selectedIds.includes(v.id),
+                                        )
+                                      }
+                                      onChange={(e) => {
+                                        const ids = todoVideos.map((v) => v.id);
+                                        if (e.target.checked) {
+                                          setSelectedIds((prev) => [
+                                            ...new Set([...prev, ...ids]),
+                                          ]);
+                                        } else {
+                                          setSelectedIds((prev) =>
+                                            prev.filter(
+                                              (id) => !ids.includes(id),
+                                            ),
+                                          );
+                                        }
+                                      }}
                                     />
-                                  </td>
+                                  </th>
                                   {columnOrder.map((key) => {
                                     const width = columnWidths[key];
+                                    const resizer = (
+                                      <div
+                                        className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
+                                        onMouseDown={(e) =>
+                                          startResizing(key, e)
+                                        }
+                                      />
+                                    );
+
                                     switch (key) {
                                       case "title":
                                         return (
-                                          <td
+                                          <th
                                             key={key}
                                             className="col-title"
                                             style={{ width }}
                                           >
-                                            <div className="title-edit-group">
-                                              <input
-                                                className="table-editable-field title-field"
-                                                value={video.title}
-                                                onChange={(e) =>
-                                                  updateVideoField(
-                                                    video.id,
-                                                    "title",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                              />
-                                            </div>
-                                          </td>
+                                            <span>Název</span>
+                                            {resizer}
+                                          </th>
                                         );
                                       case "url":
-                                        const isEditingUrl =
-                                          editingField?.id === video.id &&
-                                          editingField?.field === "videoUrl";
                                         return (
-                                          <td
+                                          <th
                                             key={key}
                                             className="col-url"
                                             style={{ width }}
                                           >
-                                            <div
-                                              className={`url-edit-wrapper ${isEditingUrl ? "is-editing" : ""}`}
-                                            >
-                                              <input
-                                                className="table-editable-field url-field"
-                                                placeholder="Vložte odkaz..."
-                                                value={video.videoUrl || ""}
-                                                onFocus={() =>
-                                                  setEditingField({
-                                                    id: video.id,
-                                                    field: "videoUrl",
-                                                  })
-                                                }
-                                                onBlur={() =>
-                                                  setEditingField(null)
-                                                }
-                                                onChange={(e) =>
-                                                  updateVideoField(
-                                                    video.id,
-                                                    "videoUrl",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                              />
-                                              {!isEditingUrl &&
-                                                video.videoUrl && (
-                                                  <button
-                                                    className="copy-link-btn"
-                                                    title="Kopírovat cestu"
-                                                    onClick={() => {
-                                                      if (video.videoUrl) {
-                                                        navigator.clipboard.writeText(
-                                                          video.videoUrl,
-                                                        );
-                                                        showToast(
-                                                          "Cesta zkopírována! 🚀",
-                                                          "Cmd+Shift+G ve Finderu",
-                                                        );
-                                                      }
-                                                    }}
-                                                  >
-                                                    <Copy size={14} />
-                                                  </button>
-                                                )}
-                                            </div>
-                                          </td>
+                                            <span>Odkaz</span>
+                                            {resizer}
+                                          </th>
                                         );
                                       case "status":
                                         return (
-                                          <td
+                                          <th
                                             key={key}
                                             className="col-status"
                                             style={{ width }}
                                           >
-                                            <div className="table-checklist">
-                                              <div
-                                                className="table-check-item done status-published"
-                                                onClick={() =>
-                                                  toggleVideoStep(
-                                                    video.id,
-                                                    "isPublished",
-                                                  )
-                                                }
-                                              >
-                                                <Circle
-                                                  size={16}
-                                                  fill="currentColor"
-                                                />
-                                              </div>
+                                            <div className="header-workflow">
+                                              <span className="stage-dubbing">
+                                                Dabing
+                                              </span>
+                                              <ChevronRight
+                                                size={14}
+                                                className="separator"
+                                              />
+                                              <span className="stage-subtitles">
+                                                Titulky
+                                              </span>
+                                              <ChevronRight
+                                                size={14}
+                                                className="separator"
+                                              />
+                                              <span className="stage-published">
+                                                Publikováno
+                                              </span>
                                             </div>
-                                          </td>
+                                            {resizer}
+                                          </th>
                                         );
                                       case "lang":
                                         return (
-                                          <td
+                                          <th
                                             key={key}
                                             className="col-lang"
                                             style={{ width }}
-                                            onClick={() =>
-                                              setEditingField({
-                                                id: video.id,
-                                                field: "language",
-                                              })
-                                            }
                                           >
-                                            {editingField?.id === video.id &&
-                                            editingField?.field ===
-                                              "language" ? (
-                                              <div
-                                                className="inline-selector-wrapper"
-                                                ref={selectorRef}
-                                              >
-                                                {renderTagSelector(
-                                                  video.language,
-                                                  (val) =>
-                                                    updateVideoField(
-                                                      video.id,
-                                                      "language",
-                                                      val,
-                                                    ),
-                                                  "lang",
-                                                )}
-                                                <button
-                                                  className="close-selector-btn"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEditingField(null);
-                                                  }}
-                                                >
-                                                  Hotovo
-                                                </button>
-                                              </div>
-                                            ) : (
-                                              <div className="chips-container">
-                                                <Globe
-                                                  size={12}
-                                                  className="url-icon"
-                                                />
-                                                {(video.language || "")
-                                                  .split(",")
-                                                  .map((l, i) => {
-                                                    const tag = l.trim();
-                                                    if (!tag) return null;
-                                                    const { className, style } =
-                                                      getTagStyle(tag);
-                                                    return (
-                                                      <span
-                                                        key={i}
-                                                        className={`chip lang-chip ${className}`}
-                                                        style={style}
-                                                      >
-                                                        {tag}
-                                                      </span>
-                                                    );
-                                                  })}
-                                              </div>
-                                            )}
-                                          </td>
+                                            <span>Jazyk</span>
+                                            {resizer}
+                                          </th>
                                         );
                                       case "tags":
                                         return (
-                                          <td
+                                          <th
                                             key={key}
                                             className="col-tags"
                                             style={{ width }}
-                                            onClick={() =>
-                                              setEditingField({
-                                                id: video.id,
-                                                field: "tags",
-                                              })
-                                            }
                                           >
-                                            {editingField?.id === video.id &&
-                                            editingField?.field === "tags" ? (
-                                              <div
-                                                className="inline-selector-wrapper"
-                                                ref={selectorRef}
-                                              >
-                                                {renderTagSelector(
-                                                  video.tags,
-                                                  (val) =>
-                                                    updateVideoField(
-                                                      video.id,
-                                                      "tags",
-                                                      val,
-                                                    ),
-                                                  "other",
-                                                )}
-                                                <button
-                                                  className="close-selector-btn"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEditingField(null);
-                                                  }}
-                                                >
-                                                  Hotovo
-                                                </button>
-                                              </div>
-                                            ) : (
-                                              <div className="chips-container">
-                                                {(video.tags || "")
-                                                  .split(",")
-                                                  .map((t, i) => {
-                                                    const tag = t.trim();
-                                                    if (!tag) return null;
-                                                    const { className, style } =
-                                                      getTagStyle(tag);
-                                                    return (
-                                                      <span
-                                                        key={i}
-                                                        className={`chip tag-chip ${className}`}
-                                                        style={style}
-                                                      >
-                                                        {tag}
-                                                      </span>
-                                                    );
-                                                  })}
-                                              </div>
-                                            )}
-                                          </td>
+                                            <span>Tagy</span>
+                                            {resizer}
+                                          </th>
                                         );
                                       case "notes":
                                         return (
-                                          <td
-                                            key={key}
-                                            className="col-notes"
-                                            style={{ width }}
-                                          >
-                                            <div className="table-notes-container">
-                                              {editingField?.id === video.id &&
-                                              editingField?.field ===
-                                                "notes" ? (
-                                                <textarea
-                                                  autoFocus
-                                                  className="table-editable-notes"
-                                                  placeholder="..."
-                                                  value={video.notes}
-                                                  onBlur={() =>
-                                                    setEditingField(null)
-                                                  }
-                                                  onChange={(e) =>
-                                                    updateNotes(
-                                                      video.id,
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                />
-                                              ) : (
-                                                <div
-                                                  className="notes-preview"
-                                                  onClick={() =>
-                                                    setEditingField({
-                                                      id: video.id,
-                                                      field: "notes",
-                                                    })
-                                                  }
-                                                  title={video.notes}
-                                                >
-                                                  {video.notes || "..."}
-                                                </div>
-                                              )}
-                                            </div>
-                                          </td>
+                                          <th key={key} className="col-notes">
+                                            <span>Poznámky</span>
+                                          </th>
                                         );
                                       default:
                                         return null;
                                     }
                                   })}
-                                  <td className="col-actions">
-                                    <button
-                                      onClick={() => deleteVideo(video.id)}
-                                      className="delete-btn"
-                                      title="Smazat"
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </td>
+                                  <th className="col-actions"></th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <SortableContext
+                                items={todoVideos.map((v) => v.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <tbody>
+                                  {todoVideos.map((video) => (
+                                    <SortableRow
+                                      key={video.id}
+                                      video={video}
+                                      selectedIds={selectedIds}
+                                      toggleSelection={toggleSelection}
+                                      columnOrder={columnOrder}
+                                      columnWidths={columnWidths}
+                                      updateVideoField={updateVideoField}
+                                      editingField={editingField}
+                                      setEditingField={setEditingField}
+                                      showToast={showToast}
+                                      deleteVideo={deleteVideo}
+                                      updateNotes={updateNotes}
+                                      toggleVideoStep={toggleVideoStep}
+                                      renderTagSelector={renderTagSelector}
+                                      getTagStyle={getTagStyle}
+                                      selectorRef={selectorRef}
+                                    />
+                                  ))}
+                                </tbody>
+                              </SortableContext>
+                            </table>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {/* Invoices Section */}
-                  <div className="invoices-section">
-                    <div
-                      className="invoices-header"
-                      onClick={() => toggleInvoiceCollapse(creator)}
-                    >
-                      <div className="invoices-title">
-                        <FileText size={16} />
-                        <span>Faktury</span>
-                        {collapsedInvoices.includes(creator) ? (
-                          <ChevronRight size={14} />
-                        ) : (
-                          <ChevronDown size={14} />
-                        )}
-                      </div>
-                    </div>
-
-                    {!collapsedInvoices.includes(creator) && (
-                      <div className="invoices-content">
-                        <button
-                          className="add-invoice-btn"
-                          style={{ marginBottom: "1rem" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addInvoice(creator);
-                          }}
-                          title="Přidat novou fakturu"
+                    {/* Published Videos Section */}
+                    {doneVideos.length > 0 && (
+                      <div className="section-group published-section">
+                        <div
+                          className="section-header"
+                          onClick={() => togglePublishedCollapse(creator)}
                         >
-                          <Plus size={14} /> Přidat fakturu
-                        </button>
-                        {(() => {
-                          const creatorInvoices = invoices
-                            .filter(
-                              (inv) =>
-                                inv.creator === creator &&
-                                inv.app === currentApp,
-                            )
-                            .sort(
-                              (a, b) =>
-                                new Date(b.date).getTime() -
-                                new Date(a.date).getTime(),
-                            );
+                          <div className="section-title">
+                            <Circle size={14} fill="#10b981" />
+                            <span>Publikovaná videa</span>
+                            {collapsedPublished.includes(creator) ? (
+                              <ChevronRight size={14} />
+                            ) : (
+                              <ChevronDown size={14} />
+                            )}
+                          </div>
+                        </div>
 
-                          if (creatorInvoices.length === 0) {
-                            return (
-                              <p className="no-invoices">Žádné faktury.</p>
-                            );
-                          }
+                        {!collapsedPublished.includes(creator) && (
+                          <div className="video-table-container">
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th
+                                    className="col-drag"
+                                    style={{ width: "24px" }}
+                                  ></th>
+                                  <th className="col-select">
+                                    {" "}
+                                    <input
+                                      type="checkbox"
+                                      checked={
+                                        doneVideos.length > 0 &&
+                                        doneVideos.every((v) =>
+                                          selectedIds.includes(v.id),
+                                        )
+                                      }
+                                      onChange={(e) => {
+                                        const ids = doneVideos.map((v) => v.id);
+                                        if (e.target.checked) {
+                                          setSelectedIds((prev) => [
+                                            ...new Set([...prev, ...ids]),
+                                          ]);
+                                        } else {
+                                          setSelectedIds((prev) =>
+                                            prev.filter(
+                                              (id) => !ids.includes(id),
+                                            ),
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  </th>
+                                  {columnOrder.map((key) => {
+                                    const width = columnWidths[key];
+                                    const resizer = (
+                                      <div
+                                        className={`resizer ${isResizing === key ? "is-resizing" : ""}`}
+                                        onMouseDown={(e) =>
+                                          startResizing(key, e)
+                                        }
+                                      />
+                                    );
 
-                          const currentLimit = invoiceLimits[creator] || 5;
-                          const visibleInvoices = creatorInvoices.slice(
-                            0,
-                            currentLimit,
-                          );
-
-                          return (
-                            <>
-                              <table className="invoices-table">
-                                <thead>
-                                  <tr>
-                                    <th>Datum</th>
-                                    <th>Stav</th>
-                                    <th style={{ width: "50px" }}></th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {visibleInvoices.map((inv) => (
-                                    <tr key={inv.id}>
-                                      <td>
-                                        <div className="invoice-date-cell">
-                                          <Calendar
-                                            size={14}
-                                            className="field-icon"
-                                          />
-                                          <div
-                                            className="invoice-date-wrapper"
-                                            onClick={(e) => {
-                                              const input =
-                                                e.currentTarget.querySelector(
-                                                  "input",
-                                                );
-                                              if (
-                                                input &&
-                                                "showPicker" in input
-                                              ) {
-                                                try {
-                                                  (input as any).showPicker();
-                                                } catch (err) {
-                                                  input.focus();
-                                                }
-                                              }
-                                            }}
+                                    switch (key) {
+                                      case "title":
+                                        return (
+                                          <th
+                                            key={key}
+                                            className="col-title"
+                                            style={{ width }}
                                           >
-                                            <span className="invoice-date-display">
-                                              {formatDate(inv.date)}
-                                            </span>
-                                            <input
-                                              type="date"
-                                              className="invoice-date-input"
-                                              value={inv.date}
-                                              onChange={(e) =>
-                                                updateInvoice(
-                                                  inv.id,
-                                                  "date",
-                                                  e.target.value,
-                                                )
-                                              }
-                                            />
-                                          </div>
-                                        </div>
-                                      </td>{" "}
-                                      <td>
-                                        <div
-                                          className="invoice-status-cycle"
-                                          onClick={() =>
-                                            toggleInvoiceStatus(inv.id)
-                                          }
-                                        >
-                                          {!inv.isReceived && !inv.isPaid && (
-                                            <span className="status-chip empty">
-                                              Žádný stav
-                                            </span>
-                                          )}
-                                          {inv.isReceived && !inv.isPaid && (
-                                            <span className="status-chip active received">
-                                              <Check size={12} /> Přijato
-                                            </span>
-                                          )}
-                                          {inv.isPaid && (
-                                            <span className="status-chip active paid">
-                                              <Check size={12} /> Zaplaceno
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-                                      <td className="col-actions">
-                                        <button
-                                          onClick={() => deleteInvoice(inv.id)}
-                                          className="delete-btn"
-                                          title="Smazat fakturu"
-                                        >
-                                          <Trash2 size={14} />
-                                        </button>
-                                      </td>
-                                    </tr>
+                                            <span>Název</span>
+                                            {resizer}
+                                          </th>
+                                        );
+                                      case "url":
+                                        return (
+                                          <th
+                                            key={key}
+                                            className="col-url"
+                                            style={{ width }}
+                                          >
+                                            <span>Odkaz</span>
+                                            {resizer}
+                                          </th>
+                                        );
+                                      case "status":
+                                        return (
+                                          <th
+                                            key={key}
+                                            className="col-status"
+                                            style={{ width }}
+                                          >
+                                            <span>Stav</span>
+                                            {resizer}
+                                          </th>
+                                        );
+                                      case "lang":
+                                        return (
+                                          <th
+                                            key={key}
+                                            className="col-lang"
+                                            style={{ width }}
+                                          >
+                                            <span>Jazyk</span>
+                                            {resizer}
+                                          </th>
+                                        );
+                                      case "tags":
+                                        return (
+                                          <th
+                                            key={key}
+                                            className="col-tags"
+                                            style={{ width }}
+                                          >
+                                            <span>Tagy</span>
+                                            {resizer}
+                                          </th>
+                                        );
+                                      case "notes":
+                                        return (
+                                          <th key={key} className="col-notes">
+                                            <span>Poznámky</span>
+                                          </th>
+                                        );
+                                      default:
+                                        return null;
+                                    }
+                                  })}
+                                  <th className="col-actions"></th>
+                                </tr>
+                              </thead>
+                              <SortableContext
+                                items={doneVideos.map((v) => v.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <tbody>
+                                  {doneVideos.map((video) => (
+                                    <SortableRow
+                                      key={video.id}
+                                      video={video}
+                                      selectedIds={selectedIds}
+                                      toggleSelection={toggleSelection}
+                                      columnOrder={columnOrder}
+                                      columnWidths={columnWidths}
+                                      updateVideoField={updateVideoField}
+                                      editingField={editingField}
+                                      setEditingField={setEditingField}
+                                      showToast={showToast}
+                                      deleteVideo={deleteVideo}
+                                      updateNotes={updateNotes}
+                                      toggleVideoStep={toggleVideoStep}
+                                      renderTagSelector={renderTagSelector}
+                                      getTagStyle={getTagStyle}
+                                      selectorRef={selectorRef}
+                                    />
                                   ))}
                                 </tbody>
-                              </table>
-                              <div className="invoice-pagination-controls">
-                                {creatorInvoices.length > currentLimit && (
-                                  <button
-                                    className="show-more-invoices"
-                                    onClick={() =>
-                                      setInvoiceLimits((prev) => ({
-                                        ...prev,
-                                        [creator]: currentLimit + 5,
-                                      }))
-                                    }
-                                  >
-                                    Zobrazit dalších 5 (zbývá{" "}
-                                    {creatorInvoices.length - currentLimit})
-                                  </button>
-                                )}
-                                {currentLimit > 5 && (
-                                  <button
-                                    className="show-more-invoices secondary"
-                                    onClick={() =>
-                                      setInvoiceLimits((prev) => ({
-                                        ...prev,
-                                        [creator]: 5,
-                                      }))
-                                    }
-                                  >
-                                    Zobrazit méně
-                                  </button>
-                                )}
-                              </div>
-                            </>
-                          );
-                        })()}
+                              </SortableContext>
+                            </table>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                </>
-              )}
-            </section>
-          );
-        })}
 
-        {videos.length === 0 && (
-          <div className="empty-state">
-            <p>Zatím žádná videa. Klikněte na "Nové Video" pro začátek.</p>
-          </div>
-        )}
+                    {/* Invoices Section */}
+                    <div className="invoices-section">
+                      <div
+                        className="invoices-header"
+                        onClick={() => toggleInvoiceCollapse(creator)}
+                      >
+                        <div className="invoices-title">
+                          <FileText size={16} />
+                          <span>Faktury</span>
+                          {collapsedInvoices.includes(creator) ? (
+                            <ChevronRight size={14} />
+                          ) : (
+                            <ChevronDown size={14} />
+                          )}
+                        </div>
+                      </div>
+
+                      {!collapsedInvoices.includes(creator) && (
+                        <div className="invoices-content">
+                          <button
+                            className="add-invoice-btn"
+                            style={{ marginBottom: "1rem" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addInvoice(creator);
+                            }}
+                            title="Přidat novou fakturu"
+                          >
+                            <Plus size={14} /> Přidat fakturu
+                          </button>
+                          {(() => {
+                            const creatorInvoices = invoices
+                              .filter(
+                                (inv) =>
+                                  inv.creator === creator &&
+                                  inv.app === currentApp,
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.date).getTime() -
+                                  new Date(a.date).getTime(),
+                              );
+
+                            if (creatorInvoices.length === 0) {
+                              return (
+                                <p className="no-invoices">Žádné faktury.</p>
+                              );
+                            }
+
+                            const currentLimit = invoiceLimits[creator] || 5;
+                            const visibleInvoices = creatorInvoices.slice(
+                              0,
+                              currentLimit,
+                            );
+
+                            return (
+                              <>
+                                <table className="invoices-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Datum</th>
+                                      <th>Stav</th>
+                                      <th style={{ width: "50px" }}></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {visibleInvoices.map((inv) => (
+                                      <tr key={inv.id}>
+                                        <td>
+                                          <div className="invoice-date-cell">
+                                            <Calendar
+                                              size={14}
+                                              className="field-icon"
+                                            />
+                                            <div
+                                              className="invoice-date-wrapper"
+                                              onClick={(e) => {
+                                                const input =
+                                                  e.currentTarget.querySelector(
+                                                    "input",
+                                                  );
+                                                if (
+                                                  input &&
+                                                  "showPicker" in input
+                                                ) {
+                                                  try {
+                                                    (input as any).showPicker();
+                                                  } catch (err) {
+                                                    input.focus();
+                                                  }
+                                                }
+                                              }}
+                                            >
+                                              <span className="invoice-date-display">
+                                                {formatDate(inv.date)}
+                                              </span>
+                                              <input
+                                                type="date"
+                                                className="invoice-date-input"
+                                                value={inv.date}
+                                                onChange={(e) =>
+                                                  updateInvoice(
+                                                    inv.id,
+                                                    "date",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                              />
+                                            </div>
+                                          </div>
+                                        </td>{" "}
+                                        <td>
+                                          <div
+                                            className="invoice-status-cycle"
+                                            onClick={() =>
+                                              toggleInvoiceStatus(inv.id)
+                                            }
+                                          >
+                                            {!inv.isReceived && !inv.isPaid && (
+                                              <span className="status-chip empty">
+                                                Žádný stav
+                                              </span>
+                                            )}
+                                            {inv.isReceived && !inv.isPaid && (
+                                              <span className="status-chip active received">
+                                                <Check size={12} /> Přijato
+                                              </span>
+                                            )}
+                                            {inv.isPaid && (
+                                              <span className="status-chip active paid">
+                                                <Check size={12} /> Zaplaceno
+                                              </span>
+                                            )}
+                                          </div>
+                                        </td>
+                                        <td className="col-actions">
+                                          <button
+                                            onClick={() =>
+                                              deleteInvoice(inv.id)
+                                            }
+                                            className="delete-btn"
+                                            title="Smazat fakturu"
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                <div className="invoice-pagination-controls">
+                                  {creatorInvoices.length > currentLimit && (
+                                    <button
+                                      className="show-more-invoices"
+                                      onClick={() =>
+                                        setInvoiceLimits((prev) => ({
+                                          ...prev,
+                                          [creator]: currentLimit + 5,
+                                        }))
+                                      }
+                                    >
+                                      Zobrazit dalších 5 (zbývá{" "}
+                                      {creatorInvoices.length - currentLimit})
+                                    </button>
+                                  )}
+                                  {currentLimit > 5 && (
+                                    <button
+                                      className="show-more-invoices secondary"
+                                      onClick={() =>
+                                        setInvoiceLimits((prev) => ({
+                                          ...prev,
+                                          [creator]: 5,
+                                        }))
+                                      }
+                                    >
+                                      Zobrazit méně
+                                    </button>
+                                  )}
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </section>
+            );
+          })}
+
+          {videos.length === 0 && (
+            <div className="empty-state">
+              <p>Zatím žádná videa. Klikněte na "Nové Video" pro začátek.</p>
+            </div>
+          )}
+        </DndContext>
       </main>
 
       {toast && (

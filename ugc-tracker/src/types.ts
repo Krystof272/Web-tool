@@ -17,6 +17,7 @@ export interface Video {
   isSubtitles: boolean;
   isPublished: boolean;
   createdAt: number;
+  order?: number;
 }
 
 export interface Invoice {
