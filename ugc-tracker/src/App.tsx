@@ -98,7 +98,7 @@ function App() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [editingField, setEditingField] = useState<{
     id: string;
-    field: "tags" | "language" | "notes";
+    field: "tags" | "language" | "notes" | "videoUrl";
   } | null>(null);
   const [toast, setToast] = useState<{
     message: string;
@@ -1704,17 +1704,31 @@ function App() {
                                           </td>
                                         );
                                       case "url":
+                                        const isEditingUrl =
+                                          editingField?.id === video.id &&
+                                          editingField?.field === "videoUrl";
                                         return (
                                           <td
                                             key={key}
                                             className="col-url"
                                             style={{ width }}
                                           >
-                                            <div className="url-edit-wrapper">
+                                            <div
+                                              className={`url-edit-wrapper ${isEditingUrl ? "is-editing" : ""}`}
+                                            >
                                               <input
                                                 className="table-editable-field url-field"
                                                 placeholder="Vložte odkaz..."
                                                 value={video.videoUrl || ""}
+                                                onFocus={() =>
+                                                  setEditingField({
+                                                    id: video.id,
+                                                    field: "videoUrl",
+                                                  })
+                                                }
+                                                onBlur={() =>
+                                                  setEditingField(null)
+                                                }
                                                 onChange={(e) =>
                                                   updateVideoField(
                                                     video.id,
@@ -1723,25 +1737,26 @@ function App() {
                                                   )
                                                 }
                                               />
-                                              {video.videoUrl && (
-                                                <button
-                                                  className="copy-link-btn"
-                                                  title="Kopírovat cestu"
-                                                  onClick={() => {
-                                                    if (video.videoUrl) {
-                                                      navigator.clipboard.writeText(
-                                                        video.videoUrl,
-                                                      );
-                                                      showToast(
-                                                        "Cesta zkopírována! 🚀",
-                                                        "Cmd+Shift+G ve Finderu",
-                                                      );
-                                                    }
-                                                  }}
-                                                >
-                                                  <Copy size={14} />
-                                                </button>
-                                              )}
+                                              {!isEditingUrl &&
+                                                video.videoUrl && (
+                                                  <button
+                                                    className="copy-link-btn"
+                                                    title="Kopírovat cestu"
+                                                    onClick={() => {
+                                                      if (video.videoUrl) {
+                                                        navigator.clipboard.writeText(
+                                                          video.videoUrl,
+                                                        );
+                                                        showToast(
+                                                          "Cesta zkopírována! 🚀",
+                                                          "Cmd+Shift+G ve Finderu",
+                                                        );
+                                                      }
+                                                    }}
+                                                  >
+                                                    <Copy size={14} />
+                                                  </button>
+                                                )}
                                             </div>
                                           </td>
                                         );
@@ -2159,17 +2174,31 @@ function App() {
                                           </td>
                                         );
                                       case "url":
+                                        const isEditingUrl =
+                                          editingField?.id === video.id &&
+                                          editingField?.field === "videoUrl";
                                         return (
                                           <td
                                             key={key}
                                             className="col-url"
                                             style={{ width }}
                                           >
-                                            <div className="url-edit-wrapper">
+                                            <div
+                                              className={`url-edit-wrapper ${isEditingUrl ? "is-editing" : ""}`}
+                                            >
                                               <input
                                                 className="table-editable-field url-field"
                                                 placeholder="Vložte odkaz..."
                                                 value={video.videoUrl || ""}
+                                                onFocus={() =>
+                                                  setEditingField({
+                                                    id: video.id,
+                                                    field: "videoUrl",
+                                                  })
+                                                }
+                                                onBlur={() =>
+                                                  setEditingField(null)
+                                                }
                                                 onChange={(e) =>
                                                   updateVideoField(
                                                     video.id,
@@ -2178,25 +2207,26 @@ function App() {
                                                   )
                                                 }
                                               />
-                                              {video.videoUrl && (
-                                                <button
-                                                  className="copy-link-btn"
-                                                  title="Kopírovat cestu"
-                                                  onClick={() => {
-                                                    if (video.videoUrl) {
-                                                      navigator.clipboard.writeText(
-                                                        video.videoUrl,
-                                                      );
-                                                      showToast(
-                                                        "Cesta zkopírována! 🚀",
-                                                        "Cmd+Shift+G ve Finderu",
-                                                      );
-                                                    }
-                                                  }}
-                                                >
-                                                  <Copy size={14} />
-                                                </button>
-                                              )}
+                                              {!isEditingUrl &&
+                                                video.videoUrl && (
+                                                  <button
+                                                    className="copy-link-btn"
+                                                    title="Kopírovat cestu"
+                                                    onClick={() => {
+                                                      if (video.videoUrl) {
+                                                        navigator.clipboard.writeText(
+                                                          video.videoUrl,
+                                                        );
+                                                        showToast(
+                                                          "Cesta zkopírována! 🚀",
+                                                          "Cmd+Shift+G ve Finderu",
+                                                        );
+                                                      }
+                                                    }}
+                                                  >
+                                                    <Copy size={14} />
+                                                  </button>
+                                                )}
                                             </div>
                                           </td>
                                         );
